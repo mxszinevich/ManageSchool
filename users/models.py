@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 from .users_validators import _phone_validation
 
+def create_path_media_user(instance, filename):
+
+    return f'Пользователи/{instance.position}/{instance.full_name}/Профиль_{instance.last_name}_.{filename.split(".")[-1]}'
+
 class StaffUserManager(BaseUserManager):
 
     def create_user(self, email,password=None, **required_fields):
@@ -28,10 +32,6 @@ class StaffUserManager(BaseUserManager):
         user.is_admin = True
         user.save(using=self._db)
         return user
-
-def create_path_media_user(instance, filename):
-
-    return f'Пользователи/{instance.position}/{instance.full_name}/Профиль_{instance.last_name}_.{filename.split(".")[-1]}'
 
 class StaffUser(AbstractBaseUser):
     """Кастомная модель пользователя"""
