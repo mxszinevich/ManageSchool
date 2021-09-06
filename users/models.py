@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 from .users_validators import _phone_validation
 
+
 def create_path_media_user(instance, filename):
 
     return f'Пользователи/{instance.position}/{instance.full_name}/Профиль_{instance.last_name}_.{filename.split(".")[-1]}'
@@ -30,6 +31,7 @@ class StaffUserManager(BaseUserManager):
             **required_fields
         )
         user.is_admin = True
+        user.is_account_confirmation=True
         user.save(using=self._db)
         return user
 
@@ -42,11 +44,11 @@ class StaffUser(AbstractBaseUser):
     POSITION_ADMINISTRATOR=3
     POSITION_DIRECTOR=4
 
+
     POSITION_STAFF_CHOISES=(
         (POSITION_TEACHER,'Учитель'),
         (POSITION_MANAGER_DIRECTION,'Руководитель направления'),
         (POSITION_ADMINISTRATOR,'Администратор'),
-        (POSITION_DIRECTOR,'Директор'),
     )
 
     first_name=models.CharField(verbose_name='Имя',max_length=255)
@@ -57,7 +59,7 @@ class StaffUser(AbstractBaseUser):
     date_of_birth = models.DateField(verbose_name='Дата рождения')
     phone_number = models.CharField(verbose_name='Телефонный номер',validators=[_phone_validation], max_length=17, blank=True)
     position=models.PositiveSmallIntegerField(verbose_name='Должность',choices=POSITION_STAFF_CHOISES)
-
+    is_account_confirmation=models.BooleanField(verbose_name='Подтверждение аккаунта в системе',default=False)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
@@ -66,14 +68,15 @@ class StaffUser(AbstractBaseUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['date_of_birth','phone_number','position','first_name','last_name','middle_name']
 
+    class Meta:
+        verbose_name='Сотрудники школы'
+
     def __str__(self):
         return f'{self.full_name}'
 
     @property
     def full_name(self):
         return f'{self.last_name} {self.first_name} {self.middle_name}'
-
-
 
     @property
     def is_staff(self):
@@ -90,6 +93,29 @@ class StaffUser(AbstractBaseUser):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+
+
+
+class Student(StaffUser):
+    """Класс ученика/студента"""
+    REQUIRED_FIELDS = ['date_of_birth', 'first_name', 'last_name', 'middle_name']
+    parents=models.JSONField(verbose_name='Родители',default={'parent1':{'name':'','phone':''}})
+    start_learning=models.DateField(verbose_name='Начало обучения',blank=True,auto_now=True)
+    # @TODO убрать default у end_learning
+    end_learning=models.DateField(verbose_name='Конец обучения',blank=True,default='2030-01-01')
+
+
+    class Meta:
+        verbose_name = 'Учащиеся'
+
+
+
+
+
+
+
+
+
 
 
 

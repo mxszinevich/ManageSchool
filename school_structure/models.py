@@ -1,7 +1,6 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
-
-import users.models
+from users.models import StaffUser, Student
 
 
 class SchoolStructure(models.Model):
@@ -25,6 +24,7 @@ class EducationalСlass(models.Model):
     name = models.CharField(max_length=300, verbose_name='Название класса')
     slug = models.SlugField(max_length=300, verbose_name='url класса')
     school=models.ForeignKey(SchoolStructure,verbose_name='Школа',related_name='classes',on_delete=models.CASCADE)
+    student = models.ManyToManyField(Student, verbose_name='Учащиеся',blank=True,related_name='classes')
 
 
     class Meta:
@@ -78,7 +78,7 @@ class TimeTable(models.Model):
     subject=models.ForeignKey(Subject,verbose_name='Предмет',on_delete=models.CASCADE)
     topic=models.ManyToManyField(Topic,verbose_name='Темы занятий',blank=True,null=True)
     educational_class=models.ManyToManyField(EducationalСlass,verbose_name='Образовательные классы',related_name='timetable',blank=True,null=True)
-    teacher=models.ManyToManyField(users.models.StaffUser,verbose_name='Учитель(я)',related_name='timetable',blank=True,null=True)
+    teacher=models.ManyToManyField(StaffUser,verbose_name='Учитель(я)',related_name='timetable',blank=True,null=True)
     day=models.DateField(verbose_name='День занятий')
     start_time=models.TimeField(verbose_name='Начало занятий')
     end_time=models.TimeField(verbose_name='Конец занятий')
