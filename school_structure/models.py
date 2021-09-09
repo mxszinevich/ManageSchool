@@ -1,19 +1,21 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
-from users.models import StaffUser, Student
 
+__all__=('School','EducationalСlass','DirectionScience',\
+         'DirectionScience','Topic','Subject','TimeTable','ScoreStudent')
 
-class SchoolStructure(models.Model):
+class School(models.Model):
     """Образовательное учреждение"""
     name=models.CharField(max_length=300,verbose_name='Название школы')
-    slug=models.SlugField(max_length=300,verbose_name='url школы')
-    directions_science=models.ManyToManyField('DirectionScience',verbose_name='Направления обучения',blank=True,null=True)
+    #slug=models.SlugField(max_length=300,verbose_name='url школы')
     addres=models.CharField(max_length=300,verbose_name='Адресс школы')
     email=models.EmailField(max_length=100,verbose_name='Электронный адрес')
 
     class Meta:
         verbose_name='Образовательная организация'
-        verbose_name='Образовательные организации'
+        verbose_name='Образовательная организации'
+
 
     def __str__(self):
         return self.name
@@ -22,10 +24,9 @@ class SchoolStructure(models.Model):
 class EducationalСlass(models.Model):
     """Учебные классы образовательного учреждения"""
     name = models.CharField(max_length=300, verbose_name='Название класса')
-    slug = models.SlugField(max_length=300, verbose_name='url класса')
-    school=models.ForeignKey(SchoolStructure,verbose_name='Школа',related_name='classes',on_delete=models.CASCADE)
-    student = models.ManyToManyField(Student, verbose_name='Учащиеся',blank=True,related_name='classes')
-
+    #slug = models.SlugField(max_length=300, verbose_name='url класса')
+    school=models.ForeignKey(School,verbose_name='Школа',related_name='classes',on_delete=models.CASCADE)
+    timetable = models.ManyToManyField('TimeTable', verbose_name='Расписание',related_name='classes', blank=True)
 
     class Meta:
         verbose_name='Образовательный класс'
@@ -37,8 +38,8 @@ class EducationalСlass(models.Model):
 class DirectionScience(models.Model):
     """Учебные направления образовательного учреждения"""
     name = models.CharField(max_length=300, verbose_name='Название направления')
-    slug = models.SlugField(max_length=300, verbose_name='url направления')
-    school = models.ForeignKey(SchoolStructure, verbose_name='Школа', related_name='directions', on_delete=models.CASCADE)
+    #slug = models.SlugField(max_length=300, verbose_name='url направления')
+    school = models.ForeignKey(School, verbose_name='Школа', related_name='directions', on_delete=models.CASCADE)
 
     class Meta:
         verbose_name='Учебное направление'
@@ -75,20 +76,37 @@ class Subject(models.Model):
 
 class TimeTable(models.Model):
     """Расписание занятий"""
-    subject=models.ForeignKey(Subject,verbose_name='Предмет',on_delete=models.CASCADE)
+    DAYS_TYPES=(
+        (1,'Понедельник'),(2,'Вторник'),(3,'Среда'),(4,'Четверг'),(5,'Пятница'),(6,'Суббота'),(7,'Воскресенье')
+    )
+    subject=models.ForeignKey(Subject,verbose_name='Предмет',on_delete=models.CASCADE,blank=True,null=True)
     topic=models.ManyToManyField(Topic,verbose_name='Темы занятий',blank=True,null=True)
-    educational_class=models.ManyToManyField(EducationalСlass,verbose_name='Образовательные классы',related_name='timetable',blank=True,null=True)
-    teacher=models.ManyToManyField(StaffUser,verbose_name='Учитель(я)',related_name='timetable',blank=True,null=True)
-    day=models.DateField(verbose_name='День занятий')
-    start_time=models.TimeField(verbose_name='Начало занятий')
-    end_time=models.TimeField(verbose_name='Конец занятий')
+    day=models.PositiveSmallIntegerField(verbose_name='День недели',choices=DAYS_TYPES)
+    start_time=models.TimeField(verbose_name='Начало работы')
+    end_time=models.TimeField(verbose_name='Конец работы',blank=True)
 
     class Meta:
         verbose_name = 'Расписание'
         verbose_name = 'Расписание'
 
     def __str__(self):
-        return f'{self.day}-{self.subject.name}-{self.teacher}'
+        return f'{self.day}-{self.subject.name}'
+
+
+class ScoreStudent(models.Model):
+    value=models.PositiveSmallIntegerField(verbose_name='Оценка',validators=[MinValueValidator(0), MaxValueValidator(5)])
+    subject = models.ForeignKey(Subject, verbose_name='Предмет', on_delete=models.CASCADE, blank=True, null=True)
+    topic = models.ForeignKey(Topic, verbose_name='Тема занятий',on_delete=models.SET_NULL,null=True,blank=True)
+    date=models.DateField(verbose_name='Дата', blank=True)
+
+    class Meta:
+        verbose_name = 'Оценка'
+
+    
+    
+    
+    
+
 
 
 
