@@ -7,6 +7,7 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
+    path('api/school/', include('school_structure.urls')),
     path('auth/', include('djoser.urls')),
     #path('auth/', include('djoser.urls.authtoken')),
 

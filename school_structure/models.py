@@ -3,7 +3,7 @@ from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
 __all__=('School','EducationalСlass','DirectionScience',\
-         'DirectionScience','Topic','Subject','TimeTable','ScoreStudent')
+       'Topic','Subject','TimeTable','ScoreStudent')
 
 class School(models.Model):
     """Образовательное учреждение"""
@@ -40,7 +40,7 @@ class DirectionScience(models.Model):
     name = models.CharField(max_length=300, verbose_name='Название направления')
     #slug = models.SlugField(max_length=300, verbose_name='url направления')
     school = models.ForeignKey(School, verbose_name='Школа', related_name='directions', on_delete=models.CASCADE)
-
+    
     class Meta:
         verbose_name='Учебное направление'
         verbose_name='Учебные направления'
@@ -64,6 +64,8 @@ class Subject(models.Model):
     """Учебный предмет"""
     name = models.CharField(max_length=300, verbose_name='Название Предмета')
     topic=models.ManyToManyField(Topic,verbose_name='Тема занятий',null=True,blank=True)
+    direction_science=models.ForeignKey(DirectionScience,verbose_name='Учебное направление',on_delete=models.SET_NULL,blank=True,null=True,
+                                        related_name='subjects')
 
     # @TODO можно дополнить дополнительными полями
 
