@@ -42,7 +42,7 @@ class User(AbstractBaseUser):
     image = models.ImageField(verbose_name='Изображение', blank=True, upload_to=users.utils._create_path_media_user)
     date_of_birth = models.DateField(verbose_name='Дата рождения')
     phone_number = models.CharField(verbose_name='Телефонный номер', validators=[users.utils._phone_validation],
-                                    max_length=17, blank=True, unique=True)
+                                    max_length=30, blank=True, unique=True)
     extra_info = models.JSONField(verbose_name='Дополнительная информация', blank=True,null=True)
     is_account_confirmation = models.BooleanField(verbose_name='Подтверждение аккаунта в системе', default=False)
 
@@ -101,7 +101,7 @@ class StaffUser(models.Model):
     position=models.PositiveSmallIntegerField(verbose_name='Должность',choices=POSITION_STAFF_CHOISES)
     school = models.ForeignKey(school_structure.models.School,
                                                verbose_name='Образовательная организация',on_delete=models.CASCADE,
-                                               blank=True, null=True,related_name='students')
+                                               blank=True, null=True,related_name='staff')
     timetable = models.ManyToManyField(school_structure.models.TimeTable, verbose_name='График работы', related_name='staff_users', blank=True,)
 
     def __str__(self):
@@ -114,7 +114,7 @@ class Student(models.Model):
     """Класс ученика/студента"""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     start_learning=models.DateField(verbose_name='Начало обучения',blank=True,auto_now=True)
-    end_learning=models.DateField(verbose_name='Конец обучения',blank=True)
+    end_learning=models.DateField(verbose_name='Конец обучения',blank=True,null=True)
     parents=models.ManyToManyField('users.ParentsStudent',verbose_name='Родители',blank=True)
     educational_class=models.ForeignKey(school_structure.models.EducationalСlass,verbose_name='Образовательный класс',
                                         on_delete=models.CASCADE,null=True,blank=True, related_name='students')
@@ -123,13 +123,16 @@ class Student(models.Model):
     class Meta:
         verbose_name = 'Учащийся'
 
+    def __str__(self):
+        return self.user.full_name
+
 
 class ParentsStudent(models.Model):
     first_name = models.CharField(verbose_name='Имя', max_length=255)
     last_name = models.CharField(verbose_name='Фамилия', max_length=255)
     middle_name = models.CharField(verbose_name='Отчество', max_length=255, blank=True)
     phone_number = models.CharField(verbose_name='Телефонный номер', validators=[users.utils._phone_validation],
-                                    max_length=17, blank=True, unique=True)
+                                    max_length=30, blank=True, unique=True)
 
     class Meta:
         verbose_name = 'Родители'

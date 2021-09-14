@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from users.models import StaffUser,User
-from school_structure.api.serializers import SchoolSerializer
+from users.models import User, StaffUser,Student
+
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -14,10 +15,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 class StaffUserSerializer(serializers.ModelSerializer):
     base_info=UserSerializer(source='user')
-    school=SchoolSerializer()
+    #school=SchoolSerializer()
     class Meta:
         model=StaffUser
-        fields = ('base_info','school')
+        fields = ('base_info',)
 
 
     def save(self, **kwargs):
@@ -30,6 +31,12 @@ class StaffUserSerializer(serializers.ModelSerializer):
         return staff_user
         """
 
+class StudentSerializer(serializers.ModelSerializer):
+    personal_info = UserSerializer(source='user')
+
+    class Meta:
+        model=Student
+        fields=('id','personal_info',)
 
 
 
