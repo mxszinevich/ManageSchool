@@ -6,7 +6,7 @@ from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 
 
 class StaffUserManager(BaseUserManager):
-    def create_user(self, email,password=None, **required_fields):
+    def create_user(self, email, password=None, **required_fields):
         if not email:
             raise ValueError('Необходимо указать email')
 
@@ -28,7 +28,7 @@ class StaffUserManager(BaseUserManager):
             **required_fields
         )
         user.is_admin = True
-        user.is_account_confirmation=True
+        user.is_account_confirmation = True
         user.save(using=self._db)
 
         return user
@@ -43,7 +43,7 @@ class User(AbstractBaseUser):
     date_of_birth = models.DateField(verbose_name='Дата рождения')
     phone_number = models.CharField(verbose_name='Телефонный номер', validators=[users.utils._phone_validation],
                                     max_length=30, blank=True, unique=True)
-    extra_info = models.JSONField(verbose_name='Дополнительная информация', blank=True,null=True)
+    extra_info = models.JSONField(verbose_name='Дополнительная информация', blank=True, null=True)
     is_account_confirmation = models.BooleanField(verbose_name='Подтверждение аккаунта в системе', default=False)
 
     is_active = models.BooleanField(default=True)
@@ -85,23 +85,23 @@ class User(AbstractBaseUser):
 
 class StaffUser(models.Model):
     """Кастомная модель пользователя"""
-    POSITION_TEACHER=1
-    POSITION_MANAGER_DIRECTION=2
-    POSITION_ADMINISTRATOR=3
-    POSITION_DIRECTOR=4
+    POSITION_TEACHER = 1
+    POSITION_MANAGER_DIRECTION = 2
+    POSITION_ADMINISTRATOR = 3
+    POSITION_DIRECTOR = 4
 
-    POSITION_STAFF_CHOISES=(
-        (POSITION_TEACHER,'Учитель'),
-        (POSITION_MANAGER_DIRECTION,'Руководитель направления'),
-        (POSITION_ADMINISTRATOR,'Администратор'),
-        (POSITION_DIRECTOR,'Директор'),
+    POSITION_STAFF_CHOISES = (
+        (POSITION_TEACHER, 'Учитель'),
+        (POSITION_MANAGER_DIRECTION, 'Руководитель направления'),
+        (POSITION_ADMINISTRATOR, 'Администратор'),
+        (POSITION_DIRECTOR, 'Директор'),
     )
 
-    user=models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
-    position=models.PositiveSmallIntegerField(verbose_name='Должность',choices=POSITION_STAFF_CHOISES)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    position = models.PositiveSmallIntegerField(verbose_name='Должность', choices=POSITION_STAFF_CHOISES)
     school = models.ForeignKey(school_structure.models.School,
-                                               verbose_name='Образовательная организация',on_delete=models.CASCADE,
-                                               blank=True, null=True,related_name='staff')
+                                               verbose_name='Образовательная организация', on_delete=models.CASCADE,
+                                               blank=True, null=True, related_name='staff')
     timetable = models.ManyToManyField(school_structure.models.TimeTable, verbose_name='График работы', related_name='staff_users', blank=True,)
 
     def __str__(self):
@@ -113,19 +113,18 @@ class StaffUser(models.Model):
 class Student(models.Model):
     """Класс ученика/студента"""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    start_learning=models.DateField(verbose_name='Начало обучения',blank=True,auto_now=True)
-    end_learning=models.DateField(verbose_name='Конец обучения',blank=True,null=True)
-    parents=models.ManyToManyField('users.ParentsStudent',verbose_name='Родители',blank=True)
-    educational_class=models.ForeignKey(school_structure.models.EducationalСlass,verbose_name='Образовательный класс',
-                                        on_delete=models.CASCADE,null=True,blank=True, related_name='students')
-    score=models.ManyToManyField(school_structure.models.ScoreStudent,verbose_name='оценки',blank=True,related_name='students')
+    start_learning = models.DateField(verbose_name='Начало обучения', blank=True, auto_now=True)
+    end_learning = models.DateField(verbose_name='Конец обучения', blank=True, null=True)
+    parents = models.ManyToManyField('users.ParentsStudent', verbose_name='Родители', blank=True)
+    educational_class = models.ForeignKey(school_structure.models.EducationalСlass, verbose_name='Образовательный класс',
+                                        on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
+    score = models.ManyToManyField(school_structure.models.ScoreStudent, verbose_name='оценки', blank=True, related_name='students')
 
     class Meta:
         verbose_name = 'Учащийся'
 
     def __str__(self):
         return self.user.full_name
-
 
 class ParentsStudent(models.Model):
     first_name = models.CharField(verbose_name='Имя', max_length=255)
@@ -136,7 +135,7 @@ class ParentsStudent(models.Model):
 
     class Meta:
         verbose_name = 'Родители'
-        unique_together=('first_name','last_name','phone_number')
+        unique_together = ('first_name', 'last_name', 'phone_number')
 
 
 

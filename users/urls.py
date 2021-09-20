@@ -1,6 +1,8 @@
 from django.urls import path
-from users.api.views import StaffListView
+from users.api.views import StaffListView, StudentsListView
 
 urlpatterns = [
-    path('users_list', StaffListView.as_view({'get':'list','post':'create'})),
+    path('staff', StaffListView.as_view({'get':'list', 'post':'create'})),
+    path('students', StudentsListView.as_view({'get':'list', 'post':'create'})),
+    path('students/<int:pk>', StudentsListView.as_view({'get':'retrieve', 'put':'update'})),
 ]

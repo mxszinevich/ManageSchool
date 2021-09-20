@@ -23,7 +23,7 @@ class School(models.Model):
 
 class EducationalСlass(models.Model):
     """Учебные классы образовательного учреждения"""
-    name = models.CharField(max_length=300, verbose_name='Название класса')
+    name = models.CharField(max_length=300, verbose_name='Название класса',unique=True, error_messages={'unique':"Класс с таким именем уже существует"},)
     #slug = models.SlugField(max_length=300, verbose_name='url класса')
     school=models.ForeignKey(School,verbose_name='Школа',related_name='classes',on_delete=models.CASCADE)
     timetable = models.ManyToManyField('TimeTable', verbose_name='Расписание',related_name='classes', blank=True)
