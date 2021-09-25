@@ -51,7 +51,7 @@ class User(AbstractBaseUser):
 
 
     USERNAME_FIELD = 'email' # @TODO хотелось бы попробовать добавить регистрацию и по логину
-    REQUIRED_FIELDS = ['date_of_birth','first_name','last_name']
+    REQUIRED_FIELDS = ['date_of_birth', 'first_name', 'last_name']
 
 
     def __str__(self):

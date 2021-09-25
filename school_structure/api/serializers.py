@@ -1,14 +1,7 @@
 from rest_framework import serializers
 from school_structure.models import *
 from users.api.serializers import StudentSerializer,StaffUserSerializer
-from rest_framework.validators import UniqueValidator
 
-class SubjectSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Subject
-        fields = ('id', 'name',)
-        read_only_fields = ('id',)
 
 class DirectionScienceSerializer(serializers.ModelSerializer):
     count_programs = serializers.SerializerMethodField()
@@ -21,34 +14,35 @@ class DirectionScienceSerializer(serializers.ModelSerializer):
     def get_count_programs(self, instance):
         return instance.subjects.count()
 
+class SubjectSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subject
+        fields = ('id', 'name', 'direction_science')
+        read_only_fields = ('id', )
+
+    def to_representation(self, instance):
+        representation = super(SubjectSerializer, self).to_representation(instance)
+        representation['direction_science'] = {'id': instance.direction_science_id
+            , 'name': instance.direction_science.name}
+        return  representation
+
 
 class SchoolSerializer(serializers.ModelSerializer):
     # @TODO: дописать руководство
     direction_science = DirectionScienceSerializer(many=True, source='directions')
-    count_direction_science = serializers.SerializerMethodField()
-    count_subjects = serializers.SerializerMethodField()
-    count_classes = serializers.SerializerMethodField()
-    count_students = serializers.SerializerMethodField()
     staff = StaffUserSerializer(many=True)
+    count_directions = serializers.IntegerField()
+    count_students = serializers.IntegerField()
+    count_classes = serializers.IntegerField()
+    count_subjects = serializers.IntegerField()
+
     class Meta:
         model = School
         fields = ('id', 'name', 'addres', 'email',
-                  'direction_science', 'count_subjects', 'count_classes',
-                  'count_students', 'count_direction_science', 'staff')
+                  'count_directions', 'count_students', 'count_classes', 'count_subjects',
+                  'direction_science', 'staff')
         read_only_fields = ('id',)
-
-    def get_count_subjects(self, instance):
-        return sum([direction.subjects.count() for direction in instance.directions.all()])
-
-    def get_count_classes(self, instance):
-        return instance.classes.count()
-
-    def get_count_students(self, instance):
-        return sum([ed_class.students.count() for ed_class in instance.classes.all()])
-
-    def get_count_direction_science(self, instance):
-        return instance.directions.count()
-
 
 
 
@@ -57,13 +51,25 @@ class EducationalСlassSerializer(serializers.ModelSerializer):
     students = StudentSerializer(many=True, required=False)
 
     class Meta:
-        model=EducationalСlass
-        fields=('id','name','school','count_students','students')
-        read_only_fields=('id','students')
+        model = EducationalСlass
+        fields = ('id', 'name', 'school', 'count_students', 'students')
+        read_only_fields = ('id', 'students')
+
+    def validate_name(self, value):
+        # @TODO добавить проверки
+        if len(value.split())>1:
+            raise serializers.ValidationError('Название класса должно быть указано без пробела')
+        return value
 
     def get_count_students(self, instance):
         return instance.students.count()
 
+
+class ListEducationalСlassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EducationalСlass
+        fields = ('id', 'name', 'school')
+        read_only_fields = ('id',)
 
 
 
