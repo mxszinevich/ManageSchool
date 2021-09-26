@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from school_structure.models import Subject
 from users.models import User, StaffUser, Student, ParentsStudent
 
@@ -42,12 +41,14 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = ('id', 'educational_class', 'personal_info', 'parents')
 
-    # Подумать
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['educational_class'] = {'id': instance.educational_class.id, 'name': instance.educational_class.name}
         return representation
+
+
+
+
 
 
 

@@ -49,15 +49,14 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
-
     USERNAME_FIELD = 'email' # @TODO хотелось бы попробовать добавить регистрацию и по логину
     REQUIRED_FIELDS = ['date_of_birth', 'first_name', 'last_name']
+    objects = StaffUserManager()
 
 
     def __str__(self):
         return f'{self.email}'
 
-    objects = StaffUserManager()
 
     @property
     def full_name(self):
@@ -97,7 +96,7 @@ class StaffUser(models.Model):
         (POSITION_DIRECTOR, 'Директор'),
     )
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='staff')
     position = models.PositiveSmallIntegerField(verbose_name='Должность', choices=POSITION_STAFF_CHOISES)
     school = models.ForeignKey(school_structure.models.School,
                                                verbose_name='Образовательная организация', on_delete=models.CASCADE,
@@ -112,7 +111,7 @@ class StaffUser(models.Model):
 
 class Student(models.Model):
     """Класс ученика/студента"""
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='student')
     start_learning = models.DateField(verbose_name='Начало обучения', blank=True, auto_now=True)
     end_learning = models.DateField(verbose_name='Конец обучения', blank=True, null=True)
     parents = models.ManyToManyField('users.ParentsStudent', verbose_name='Родители', blank=True)

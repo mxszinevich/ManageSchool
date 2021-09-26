@@ -40,7 +40,7 @@ class EducationalСlass(models.Model):
     )
     # slug = models.SlugField(max_length=300, verbose_name='url класса')
     school = models.ForeignKey(School, verbose_name='Школа', related_name='classes', on_delete=models.CASCADE)
-    timetable = models.ManyToManyField('TimeTable', verbose_name='Расписание', related_name='classes', blank=True)
+    timetable = models.ManyToManyField('TimeTable', verbose_name='Расписание', related_name='classes', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Образовательный класс'
@@ -105,7 +105,7 @@ class TimeTable(models.Model):
         (1, 'Понедельник'), (2, 'Вторник'), (3, 'Среда'), (4, 'Четверг'), (5, 'Пятница'), (6, 'Суббота'),
         (7, 'Воскресенье')
     )
-    subject = models.ForeignKey(Subject, verbose_name='Предмет', on_delete=models.CASCADE, blank=True, null=True)
+    subject = models.ForeignKey(Subject, verbose_name='Предмет', on_delete=models.CASCADE, blank=True)
     topic = models.ManyToManyField(Topic, verbose_name='Темы занятий', blank=True, null=True)
     day = models.PositiveSmallIntegerField(verbose_name='День недели', choices=DAYS_TYPES)
     start_time = models.TimeField(verbose_name='Начало работы')
@@ -115,8 +115,8 @@ class TimeTable(models.Model):
         verbose_name = 'Расписание'
         verbose_name = 'Расписание'
 
-    def __str__(self):
-        return f'{self.day}-{self.subject.name}'
+    # def __str__(self):
+    #     return f'{self.day}-{self.subject.name}'
 
 
 class ScoreStudent(models.Model):

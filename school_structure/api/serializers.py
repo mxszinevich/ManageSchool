@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from school_structure.models import *
-from users.api.serializers import StudentSerializer,StaffUserSerializer
+from users.api.serializers import StudentSerializer, StaffUserSerializer
 
 
 class DirectionScienceSerializer(serializers.ModelSerializer):
@@ -70,6 +70,23 @@ class ListEducationalСlassSerializer(serializers.ModelSerializer):
         model = EducationalСlass
         fields = ('id', 'name', 'school')
         read_only_fields = ('id',)
+
+class TopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Topic
+        fields = ('id', 'name', 'parent_id')
+
+
+class TimeTableSerializer(serializers.ModelSerializer):
+    subject = SubjectSerializer(read_only=True)
+    subject_id = serializers.IntegerField(write_only=True)  # @TODO Колхоз
+    topic = TopicSerializer(many=True, required=False)
+    classes = ListEducationalСlassSerializer(many=True, required=False)
+    end_time = serializers.TimeField(required=True)
+    class Meta:
+        model = TimeTable
+        fields = ('__all__')
+
 
 
 

@@ -1,8 +1,14 @@
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 from school_structure.models import *
-from .serializers import SchoolSerializer, EducationalСlassSerializer,\
-    ListEducationalСlassSerializer, SubjectSerializer
+from .serializers import (
+    SchoolSerializer,
+    EducationalСlassSerializer,
+    ListEducationalСlassSerializer,
+    SubjectSerializer,
+    TimeTableSerializer
+)
+
 
 class SchoolPagination(PageNumberPagination):
     page_size = 1000
@@ -17,7 +23,6 @@ class SubjectView(viewsets.ModelViewSet):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
 
-
 class EducationalСlassView(viewsets.ModelViewSet):
     queryset = EducationalСlass.objects.all()
 
@@ -28,10 +33,9 @@ class EducationalСlassView(viewsets.ModelViewSet):
 
 
 class TimeTableView(viewsets.ModelViewSet):
+    queryset = TimeTable.objects.all()
+    serializer_class = TimeTableSerializer
 
-    class Meta:
-        model = TimeTable
-        fields = ('__all__')
 
 
 
