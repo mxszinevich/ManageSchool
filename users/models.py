@@ -39,7 +39,7 @@ class User(AbstractBaseUser):
     last_name = models.CharField(verbose_name='Фамилия', max_length=255)
     middle_name = models.CharField(verbose_name='Отчество', max_length=255, blank=True)
     email = models.EmailField(verbose_name='Электронная почта', max_length=255, unique=True)
-    image = models.ImageField(verbose_name='Изображение', blank=True, upload_to=users.utils._create_path_media_user)
+    image = models.ImageField(verbose_name='Изображение', blank=True, null=True, upload_to=users.utils._create_path_media_user)
     date_of_birth = models.DateField(verbose_name='Дата рождения')
     phone_number = models.CharField(verbose_name='Телефонный номер', validators=[users.utils._phone_validation],
                                     max_length=30, blank=True, unique=True)

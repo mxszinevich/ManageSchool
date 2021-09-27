@@ -66,6 +66,7 @@ class EducationalСlassSerializer(serializers.ModelSerializer):
 
 
 class ListEducationalСlassSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = EducationalСlass
         fields = ('id', 'name', 'school')
@@ -77,15 +78,20 @@ class TopicSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'parent_id')
 
 
-class TimeTableSerializer(serializers.ModelSerializer):
+class TimeTableUserSerializer(serializers.ModelSerializer):
     subject = SubjectSerializer(read_only=True)
-    subject_id = serializers.IntegerField(write_only=True)  # @TODO Колхоз
+    subject_id = serializers.IntegerField(write_only=True)  # @TODO Разные поля для POST и GET запроса
     topic = TopicSerializer(many=True, required=False)
-    classes = ListEducationalСlassSerializer(many=True, required=False)
     end_time = serializers.TimeField(required=True)
+
     class Meta:
         model = TimeTable
         fields = ('__all__')
+
+
+class TimeTableSerializer(TimeTableUserSerializer):
+    classes = ListEducationalСlassSerializer(many=True, required=False)
+
 
 
 

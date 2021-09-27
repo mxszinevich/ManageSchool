@@ -7,7 +7,7 @@ __all__ = ('School', 'EducationalСlass', 'DirectionScience', \
            'Topic', 'Subject', 'TimeTable', 'ScoreStudent')
 
 class SchollManager(models.Manager):
-
+    # @TODO Правильно ли?
     def all_with_counts(self):
         return School.objects.only('id').annotate(count_directions=Count('directions', distinct=True))\
                 .annotate(count_students=Count('classes__students', distinct=True))\

@@ -16,7 +16,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 class StaffUserSerializer(serializers.ModelSerializer):
     base_info = UserSerializer(source = 'user')
-    #school=SchoolSerializer()
     class Meta:
         model = StaffUser
         fields = ('base_info',)
@@ -45,6 +44,18 @@ class StudentSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['educational_class'] = {'id': instance.educational_class.id, 'name': instance.educational_class.name}
         return representation
+
+    # @TODO Странный метод обновления
+    def update(self, instance, validated_data):
+        print(validated_data)
+        User.objects.filter(id=instance.user_id).update(**validated_data['user'])
+        Student.objects.filter(id=instance.id).update(
+            educational_class=validated_data['educational_class']
+        )
+        student = Student.objects.get(id=instance.id)
+        return super
+
+
 
 
 
