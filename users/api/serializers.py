@@ -1,9 +1,13 @@
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from school_structure.models import Subject
 from users.models import User, StaffUser, Student, ParentsStudent
+from school_structure.models import EducationalСlass
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(read_only=True)
+    phone_number = serializers.CharField(read_only=True)
+
     class Meta:
         model = User
         fields = (
@@ -32,8 +36,8 @@ class SubjectSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 class StudentSerializer(serializers.ModelSerializer):
-    personal_info = UserSerializer(source='user', required=False)
-    educational_class = serializers.CharField()
+    personal_info = UserSerializer(source='user')
+    educational_class= serializers.CharField()
     parents = ParentsStudentSerializer(many=True, required=False)
 
     class Meta:
@@ -42,18 +46,29 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['educational_class'] = {'id': instance.educational_class.id, 'name': instance.educational_class.name}
+        representation['educational_class'] = {
+            'id': instance.educational_class.id,
+            'name': instance.educational_class.name
+        }
         return representation
 
-    # @TODO Странный метод обновления
     def update(self, instance, validated_data):
-        print(validated_data)
         User.objects.filter(id=instance.user_id).update(**validated_data['user'])
-        Student.objects.filter(id=instance.id).update(
-            educational_class=validated_data['educational_class']
-        )
-        student = Student.objects.get(id=instance.id)
-        return super
+
+        try:
+            student = Student.objects.get(id=instance.id)
+            EducationalСlass.objects.only('id').get(id=int(validated_data['educational_class']))
+        except Student.DoesNotExist:
+            raise exceptions.APIException(detail='Student DoesNotExist')
+        except EducationalСlass.DoesNotExist:
+            raise exceptions.APIException(detail='EducationalСlass DoesNotExist')
+        except ValueError:
+            raise exceptions.APIException(detail='educational_class not int')
+
+        student.educational_class_id = int(validated_data['educational_class'])
+        student.save(update_fields=['educational_class_id'])
+        return student
+
 
 
 

@@ -4,7 +4,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from school_structure.api.serializers import  TimeTableUserSerializer
+from school_structure.api.serializers import TimeTableUserSerializer, TimeTableSerializer
 from school_structure.models import TimeTable, EducationalСlass
 from users.models import StaffUser, Student, User
 from .serializers import StaffUserSerializer, StudentSerializer
@@ -25,35 +25,21 @@ class StudentsListView(viewsets.ModelViewSet):
     serializer_class = StudentSerializer
     pagination_class = StudentsResultsSetPagination
 
-    # @TODO получение расписание у Students. Подключение к маршрушизатору
-    # @TODO декораторы: actions, api_view
-    @action(methods=['GET'], detail=False)
+    # serializer_classes_by_action = {
+    #     'list': AuthorTrackSerializer
+    # }
+    # @TODO исправить получение расписания
+    @action(methods=['GET'], detail=False, name='get_timetable')
     def get_timetable(self, *args, **kwargs):
-        ed_class = EducationalСlass.objects.prefetch_related('timetable').get(students__id=kwargs['pk'])
-        timetable = ed_class.timetable.all()
+        timetable = TimeTable.objects.filter(classes__students__id=kwargs['pk'])
 
         result = []
         if timetable:
-            serializer = TimeTableUserSerializer(timetable, many=True)
+            serializer = TimeTableSerializer(timetable, many=True)
             result= serializer.data
 
         return Response(result)
 
-    # @TODO Как улучшить обновление
-    def update(self, request, *args, **kwargs):
-        update_student = get_object_or_404(Student.objects.all(), pk=kwargs['pk'])
-
-        if request.data['personal_info']['email'] == update_student.user.email:
-            del request.data['personal_info']['email']
-
-        if request.data['personal_info']['phone_number'] == update_student.user.phone_number:
-            del request.data['personal_info']['phone_number']
-
-        serializer = StudentSerializer(instance=update_student, data=request.data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            update_student = serializer.save()
-
-        return  Response({'success':f'{update_student} updated'})
 
 
 

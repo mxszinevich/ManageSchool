@@ -79,14 +79,17 @@ class TopicSerializer(serializers.ModelSerializer):
 
 
 class TimeTableUserSerializer(serializers.ModelSerializer):
-    subject = SubjectSerializer(read_only=True)
-    subject_id = serializers.IntegerField(write_only=True)  # @TODO Разные поля для POST и GET запроса
+    #subject_id = serializers.IntegerField(write_only=True)  # @TODO Разные поля для POST и GET запроса
     topic = TopicSerializer(many=True, required=False)
     end_time = serializers.TimeField(required=True)
 
     class Meta:
         model = TimeTable
         fields = ('__all__')
+
+
+class TimeTableUserSerializer2(TimeTableUserSerializer):
+    subject = SubjectSerializer(read_only=True)
 
 
 class TimeTableSerializer(TimeTableUserSerializer):
