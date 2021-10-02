@@ -7,7 +7,7 @@ __all__ = ('School', 'EducationalСlass', 'DirectionScience', \
            'Topic', 'Subject', 'TimeTable', 'ScoreStudent')
 
 class SchollManager(models.Manager):
-    # @TODO Правильно ли?
+
     def all_with_counts(self):
         return School.objects.only('id').annotate(count_directions=Count('directions', distinct=True))\
                 .annotate(count_students=Count('classes__students', distinct=True))\
@@ -38,13 +38,16 @@ class EducationalСlass(models.Model):
         unique=True,
         error_messages={'unique': "Класс с таким именем уже существует"},
     )
-    # slug = models.SlugField(max_length=300, verbose_name='url класса')
     school = models.ForeignKey(School, verbose_name='Школа', related_name='classes', on_delete=models.CASCADE)
     timetable = models.ManyToManyField('TimeTable', verbose_name='Расписание', related_name='classes', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Образовательный класс'
         verbose_name = 'Образовательные классы'
+
+    @property
+    def count_students(self):
+        return self.students.count()
 
     def __str__(self):
         return self.name
@@ -123,9 +126,9 @@ class ScoreStudent(models.Model):
     value = models.PositiveSmallIntegerField(
         verbose_name='Оценка', validators=[MinValueValidator(0), MaxValueValidator(5)]
     )
-    subject = models.ForeignKey(Subject, verbose_name='Предмет', on_delete=models.CASCADE, blank=True, null=True)
+    subject = models.ForeignKey(Subject, verbose_name='Предмет', related_name='scores', on_delete=models.CASCADE, blank=True, null=True)
     topic = models.ForeignKey(Topic, verbose_name='Тема занятий', on_delete=models.SET_NULL, null=True, blank=True)
-    date = models.DateField(verbose_name='Дата', blank=True)
+    date = models.DateField(verbose_name='Дата',)
 
     class Meta:
         verbose_name = 'Оценка'

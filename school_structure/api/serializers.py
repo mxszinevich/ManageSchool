@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework import  request
 from school_structure.models import *
 from users.api.serializers import StudentSerializer, StaffUserSerializer
 
@@ -47,13 +48,11 @@ class SchoolSerializer(serializers.ModelSerializer):
 
 
 class EducationalСlassSerializer(serializers.ModelSerializer):
-    count_students = serializers.SerializerMethodField()
-    students = StudentSerializer(many=True, required=False)
+    students = StudentSerializer(many=True, read_only=True)
 
     class Meta:
         model = EducationalСlass
         fields = ('id', 'name', 'school', 'count_students', 'students')
-        read_only_fields = ('id', 'students')
 
     def validate_name(self, value):
         # @TODO добавить проверки
@@ -61,16 +60,14 @@ class EducationalСlassSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Название класса должно быть указано без пробела')
         return value
 
-    def get_count_students(self, instance):
-        return instance.students.count()
 
 
 class ListEducationalСlassSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = EducationalСlass
-        fields = ('id', 'name', 'school')
-        read_only_fields = ('id',)
+        fields = ('id', 'name', 'count_students', 'school')
+        read_only_fields = ('name', )
+
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
@@ -79,21 +76,33 @@ class TopicSerializer(serializers.ModelSerializer):
 
 
 class TimeTableUserSerializer(serializers.ModelSerializer):
-    #subject_id = serializers.IntegerField(write_only=True)  # @TODO Разные поля для POST и GET запроса
     topic = TopicSerializer(many=True, required=False)
     end_time = serializers.TimeField(required=True)
-
     class Meta:
         model = TimeTable
-        fields = ('__all__')
+        fields = '__all__'
 
-
-class TimeTableUserSerializer2(TimeTableUserSerializer):
-    subject = SubjectSerializer(read_only=True)
-
+    def to_representation(self, instance):
+        representation = super(TimeTableUserSerializer, self).to_representation(instance)
+        if self.context['request'].method == 'GET':
+            representation['subject'] = {'id': representation['subject'], 'name': instance.subject.name}
+            representation['day'] = {'id': representation['day'], 'name': instance.get_day_display()}
+        return representation
 
 class TimeTableSerializer(TimeTableUserSerializer):
-    classes = ListEducationalСlassSerializer(many=True, required=False)
+    classes = ListEducationalСlassSerializer(many=True)
+
+class ScoreStudentSerializer(serializers.Serializer):
+    value = serializers.IntegerField()
+    subject = serializers.CharField()
+    date = serializers.DateField()
+
+
+
+
+
+
+
 
 
 

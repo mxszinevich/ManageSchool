@@ -1,12 +1,13 @@
-from rest_framework import viewsets
-from rest_framework.decorators import action
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from school_structure.api.serializers import TimeTableUserSerializer, TimeTableSerializer
+from school_structure.api.serializers import TimeTableUserSerializer, TimeTableSerializer, ScoreStudentSerializer
 from school_structure.models import TimeTable, EducationalСlass
 from users.models import StaffUser, Student, User
+from .permissions import EducationClassesPermissions, MixedPermission
 from .serializers import StaffUserSerializer, StudentSerializer
 
 
@@ -20,25 +21,34 @@ class StaffListView(viewsets.ModelViewSet):
     queryset = StaffUser.objects.all()
     serializer_class = StaffUserSerializer
 
-class StudentsListView(viewsets.ModelViewSet):
+class StudentsListView(MixedPermission, viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     pagination_class = StudentsResultsSetPagination
+    permission_classes_by_action = {
+        'student_timetable': [EducationClassesPermissions,],
+        'students_scores': [EducationClassesPermissions,]
+    }
 
-    # serializer_classes_by_action = {
-    #     'list': AuthorTrackSerializer
-    # }
-    # @TODO исправить получение расписания
-    @action(methods=['GET'], detail=False, name='get_timetable')
-    def get_timetable(self, *args, **kwargs):
-        timetable = TimeTable.objects.filter(classes__students__id=kwargs['pk'])
-
-        result = []
+    @action(methods=['GET'], detail=True)
+    def student_timetable(self, *args, **kwargs):
+        print(self.action)
+        student = self.get_object()
+        timetable = TimeTable.objects.filter(classes__id=student.educational_class_id)
         if timetable:
-            serializer = TimeTableSerializer(timetable, many=True)
-            result= serializer.data
+            serializer = TimeTableUserSerializer(timetable, many=True, context={'request': self.request})
+            return Response(serializer.data)
+        return Response(timetable)
 
-        return Response(result)
+    @action(methods=['GET'], detail=True)
+    def students_scores(self, *args, **kwargs):
+        student = self.get_object()
+        # @ TODO Нужна ли проверка
+        serializer = ScoreStudentSerializer(student.score.all().order_by('subject'), many=True)
+        return Response(serializer.data)
+
+
+
 
 
 
