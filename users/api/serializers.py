@@ -35,6 +35,7 @@ class SubjectSerializer(serializers.ModelSerializer):
         model = Subject
         fields = ('__all__')
 
+# @TODO 2 id
 class StudentSerializer(serializers.ModelSerializer):
     personal_info = UserSerializer(source='user')
     educational_class= serializers.CharField()

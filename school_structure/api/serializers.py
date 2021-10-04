@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from rest_framework import  request
+from rest_framework.exceptions import APIException
+
 from school_structure.models import *
 from users.api.serializers import StudentSerializer, StaffUserSerializer
 
@@ -14,6 +15,7 @@ class DirectionScienceSerializer(serializers.ModelSerializer):
 
     def get_count_programs(self, instance):
         return instance.subjects.count()
+
 
 class SubjectSerializer(serializers.ModelSerializer):
 
@@ -46,7 +48,6 @@ class SchoolSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
-
 class EducationalСlassSerializer(serializers.ModelSerializer):
     students = StudentSerializer(many=True, read_only=True)
 
@@ -60,13 +61,15 @@ class EducationalСlassSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Название класса должно быть указано без пробела')
         return value
 
-
-
+# @TODO id по умолчанию только на вывод, если убираем id - класс не валидируется
+# @TODO school, school_id
 class ListEducationalСlassSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+
     class Meta:
         model = EducationalСlass
         fields = ('id', 'name', 'count_students', 'school')
-        read_only_fields = ('name', )
+        read_only_fields = ('name', 'count_students')
 
 
 class TopicSerializer(serializers.ModelSerializer):
@@ -78,6 +81,7 @@ class TopicSerializer(serializers.ModelSerializer):
 class TimeTableUserSerializer(serializers.ModelSerializer):
     topic = TopicSerializer(many=True, required=False)
     end_time = serializers.TimeField(required=True)
+
     class Meta:
         model = TimeTable
         fields = '__all__'
@@ -89,13 +93,36 @@ class TimeTableUserSerializer(serializers.ModelSerializer):
             representation['day'] = {'id': representation['day'], 'name': instance.get_day_display()}
         return representation
 
+
 class TimeTableSerializer(TimeTableUserSerializer):
     classes = ListEducationalСlassSerializer(many=True)
+    # @ TODO добавить расписание класса
+    # @TODO Проверить метод create
+    # @ TODO Проверка на существование timetable
+    def create(self, validated_data):
+        ed_classes = validated_data.pop('classes', None)
+        timetable = TimeTable.objects.create(**validated_data)
+        for ed_class_info in ed_classes:
+                id_ed_class = ed_class_info.get('id')
+                school = ed_class_info.get('school')
+                if id_ed_class:
+                    try:
+                        ed_class = EducationalСlass.objects.get(id=id_ed_class, school_id=school.id)
+                    except:
+                        raise APIException('Класса с id не существует')
+                ed_class.timetable.add(timetable)
+                ed_class.save()
+        return timetable
+
+
+
 
 class ScoreStudentSerializer(serializers.Serializer):
     value = serializers.IntegerField()
     subject = serializers.CharField()
     date = serializers.DateField()
+    topic = serializers.CharField()
+
 
 
 

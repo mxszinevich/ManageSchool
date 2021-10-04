@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models import Count
 from mptt.models import MPTTModel, TreeForeignKey
 
+
 __all__ = ('School', 'EducationalСlass', 'DirectionScience', \
            'Topic', 'Subject', 'TimeTable', 'ScoreStudent')
 
@@ -13,6 +14,7 @@ class SchollManager(models.Manager):
                 .annotate(count_students=Count('classes__students', distinct=True))\
                 .annotate(count_classes=Count('classes', distinct=True) )\
                 .annotate(count_subjects=Count('directions__subjects', distinct=True) )
+
 
 class School(models.Model):
     """Образовательное учреждение"""
