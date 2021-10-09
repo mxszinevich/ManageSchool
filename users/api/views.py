@@ -6,7 +6,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from  datetime import  date
+from datetime import date
 
 from school_structure.api.serializers import TimeTableUserSerializer, ScoreStudentSerializer
 from school_structure.models import TimeTable
@@ -22,7 +22,6 @@ class StudentsResultsSetPagination(PageNumberPagination):
 
 
 class StaffListView(viewsets.ModelViewSet):
-
     queryset = StaffUser.objects.all()
     serializer_class = StaffUserSerializer
 
@@ -31,32 +30,35 @@ class StudentsListView(MixedPermission, viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     pagination_class = StudentsResultsSetPagination
-
-    # @TODO permission не будет в словаре
+    permission_classes = [EducationClassesPermissions]
     permission_classes_by_action = {
-        'student_timetable': [EducationClassesPermissions,],
-        'students_scores': [EducationClassesPermissions,]
+        'student_timetable': [EducationClassesPermissions, ],
+        'students_scores': [EducationClassesPermissions, ]
     }
 
     @action(methods=['GET'], detail=True)
     def student_timetable(self, *args, **kwargs):
         student = self.get_object()
+        # self.check_object_permissions(self.request, obj)
         timetable = TimeTable.objects.filter(classes__id=student.educational_class_id)
         if timetable:
             serializer = TimeTableUserSerializer(timetable, many=True, context={'request': self.request})
             return Response(serializer.data)
         return Response(timetable)
 
-    # @TODO проверка метода
+    # @TODO django-filter
     # @TODO параметры get запроса в документацию
+    # @TODO get_queryset
     @action(methods=['GET'], detail=True)
     def students_scores(self, *args, **kwargs):
         student = self.get_object()
         # Фильтрация оценок по предмету
-        query_params = args[0].query_params
+
+        query_params = args[0].query_params  # Request
         subject_filter = Q()
         value_filter = Q()
         month_filter = Q()
+        print(query_params.getlist('subject'))
         if query_params:
             try:
                 if query_params.getlist('subject'):
@@ -75,21 +77,3 @@ class StudentsListView(MixedPermission, viewsets.ModelViewSet):
         serializer = ScoreStudentSerializer(student.score.filter(scores_filter).order_by('subject'), many=True)
 
         return Response(serializer.data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -10,16 +10,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
-            'id', 'first_name', 'last_name',
-            'middle_name', 'email', 'image',
-            'date_of_birth', 'phone_number'
-        )
-        read_only = ('password',)
-        ref_name ='ProjectBaseUser'
+        fields = ('id', 'first_name', 'last_name',
+                  'middle_name', 'email', 'image',
+                  'date_of_birth', 'phone_number'
+                  )
+        read_only_fields = ('password',)
+        ref_name = 'ProjectBaseUser'
+
 
 class StaffUserSerializer(serializers.ModelSerializer):
-    base_info = UserSerializer(source = 'user')
+    base_info = UserSerializer(source='user')
+
     class Meta:
         model = StaffUser
         fields = ('base_info',)
@@ -28,17 +29,18 @@ class StaffUserSerializer(serializers.ModelSerializer):
 class ParentsStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParentsStudent
-        fields = ('__all__')
+        fields = '__all__'
+
 
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
-        fields = ('__all__')
+        fields = '__all__'
 
-# @TODO 2 id
+
 class StudentSerializer(serializers.ModelSerializer):
     personal_info = UserSerializer(source='user')
-    educational_class= serializers.CharField()
+    educational_class = serializers.CharField()
     parents = ParentsStudentSerializer(many=True, required=False)
 
     class Meta:
@@ -58,30 +60,15 @@ class StudentSerializer(serializers.ModelSerializer):
 
         try:
             student = Student.objects.get(id=instance.id)
-            EducationalСlass.objects.only('id').get(id=int(validated_data['educational_class']))
+            educational_class = EducationalСlass.objects.only('id').get(id=int(validated_data['educational_class']))
         except Student.DoesNotExist:
             raise exceptions.APIException(detail='Student DoesNotExist')
         except EducationalСlass.DoesNotExist:
             raise exceptions.APIException(detail='EducationalСlass DoesNotExist')
         except ValueError:
-            raise exceptions.APIException(detail='educational_class not int')
+            raise exceptions.APIException(detail='EducationalClass not int')
 
-        student.educational_class_id = int(validated_data['educational_class'])
+        student.educational_class_id = educational_class.id
         student.save(update_fields=['educational_class_id'])
+
         return student
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

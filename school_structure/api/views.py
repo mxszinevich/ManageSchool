@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 from school_structure.models import *
+from .mixins import MixinSerializer
 from .serializers import (
     SchoolSerializer,
     EducationalСlassSerializer,
@@ -23,13 +24,17 @@ class SubjectView(viewsets.ModelViewSet):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
 
-class EducationalСlassView(viewsets.ModelViewSet):
+class EducationalСlassView(MixinSerializer, viewsets.ModelViewSet):
     queryset = EducationalСlass.objects.all()
+    serializer_class = EducationalСlassSerializer
+    serializer_class_by_action = {
+        'list': ListEducationalСlassSerializer
+    }
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return ListEducationalСlassSerializer
-        return EducationalСlassSerializer
+    # def get_serializer_class(self):
+    #     if self.action == 'list':
+    #         return ListEducationalСlassSerializer
+    #     return EducationalСlassSerializer
 
 
 class TimeTableView(viewsets.ModelViewSet):
