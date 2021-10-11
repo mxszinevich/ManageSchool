@@ -1,29 +1,51 @@
 from rest_framework import serializers, exceptions
+from rest_framework.decorators import action
+
 from school_structure.models import Subject
 from users.models import User, StaffUser, Student, ParentsStudent
 from school_structure.models import EducationalСlass
 
 
 class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(read_only=True)
-    phone_number = serializers.CharField(read_only=True)
-
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name',
                   'middle_name', 'email', 'image',
-                  'date_of_birth', 'phone_number'
+                  'date_of_birth', 'phone_number',
+                  'password', 'is_account_confirmation',
                   )
-        read_only_fields = ('password',)
+        extra_kwargs = {
+            'password': {'write_only': True},
+           # 'is_account_confirmation': {'write_only': True},
+        }
         ref_name = 'ProjectBaseUser'
+
+class UpdateUserSerializer(serializers.Serializer):
+    is_account_confirmation = serializers.BooleanField()
 
 
 class StaffUserSerializer(serializers.ModelSerializer):
-    base_info = UserSerializer(source='user')
+    personal_info = UpdateUserSerializer(source='user')
 
     class Meta:
         model = StaffUser
-        fields = ('base_info',)
+        fields = ('id', 'personal_info', 'position', 'school')
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data.pop('user')) # @TODO create ?
+        staff = StaffUser.objects.create(user=user, **validated_data)
+        return staff
+
+    def update(self, instance, validated_data):
+        user = User.objects.filter(id=instance.user_id).update(**validated_data.pop('user'))
+        staff_user = StaffUser.objects.get(id=instance.id)
+        staff_user.position = validated_data['position']
+        staff_user.school = validated_data['school']
+        staff_user.save(update_fields=[*validated_data])
+        return staff_user
+
+
+
 
 
 class ParentsStudentSerializer(serializers.ModelSerializer):

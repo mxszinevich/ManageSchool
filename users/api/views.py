@@ -4,15 +4,23 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 from datetime import date
+
+from rest_framework_simplejwt.views import TokenViewBase
 
 from school_structure.api.serializers import TimeTableUserSerializer, ScoreStudentSerializer
 from school_structure.models import TimeTable
 from users.models import StaffUser, Student
 from .permissions import EducationClassesPermissions, MixedPermission
 from .serializers import StaffUserSerializer, StudentSerializer
+from ..serializers import CustomTokenObtainSerializer
+
+
+class TokenObtainView(TokenViewBase):
+    serializer_class = CustomTokenObtainSerializer
 
 
 class StudentsResultsSetPagination(PageNumberPagination):

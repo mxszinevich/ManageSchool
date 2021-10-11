@@ -33,13 +33,15 @@ class StaffUserManager(BaseUserManager):
 
         return user
 
+
 class User(AbstractBaseUser):
     """Кастомный пользователь"""
     first_name = models.CharField(verbose_name='Имя', max_length=255)
     last_name = models.CharField(verbose_name='Фамилия', max_length=255)
     middle_name = models.CharField(verbose_name='Отчество', max_length=255, blank=True)
     email = models.EmailField(verbose_name='Электронная почта', max_length=255, unique=True)
-    image = models.ImageField(verbose_name='Изображение', blank=True, null=True, upload_to=users.utils._create_path_media_user)
+    image = models.ImageField(verbose_name='Изображение', blank=True, null=True,
+                              upload_to=users.utils._create_path_media_user)
     date_of_birth = models.DateField(verbose_name='Дата рождения')
     phone_number = models.CharField(verbose_name='Телефонный номер', validators=[users.utils._phone_validation],
                                     max_length=30, blank=True, unique=True)
@@ -49,14 +51,12 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
-    USERNAME_FIELD = 'email' # @TODO хотелось бы попробовать добавить регистрацию и по логину
+    USERNAME_FIELD = 'email'  # @TODO хотелось бы попробовать добавить регистрацию и по логину
     REQUIRED_FIELDS = ['date_of_birth', 'first_name', 'last_name']
     objects = StaffUserManager()
 
-
     def __str__(self):
         return f'{self.email}'
-
 
     @property
     def full_name(self):
@@ -64,7 +64,7 @@ class User(AbstractBaseUser):
 
     @property
     def short_name(self):
-        return  f'{self.last_name} {self.first_name}'
+        return f'{self.last_name} {self.first_name}'
 
     @property
     def is_staff(self):
@@ -81,6 +81,7 @@ class User(AbstractBaseUser):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+
 
 class StaffUser(models.Model):
     """Кастомная модель пользователя"""
@@ -99,15 +100,17 @@ class StaffUser(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='staff')
     position = models.PositiveSmallIntegerField(verbose_name='Должность', choices=POSITION_STAFF_CHOISES)
     school = models.ForeignKey(school_structure.models.School,
-                                               verbose_name='Образовательная организация', on_delete=models.CASCADE,
-                                               blank=True, null=True, related_name='staff')
-    timetable = models.ManyToManyField(school_structure.models.TimeTable, verbose_name='График работы', related_name='staff_users', blank=True,)
+                               verbose_name='Образовательная организация', on_delete=models.CASCADE,
+                               blank=True, null=True, related_name='staff')
+    timetable = models.ManyToManyField(school_structure.models.TimeTable, verbose_name='График работы',
+                                       related_name='staff_users', blank=True, )
 
     def __str__(self):
         return self.user.full_name
 
     class Meta:
-        verbose_name='Сотрудник'
+        verbose_name = 'Сотрудник'
+
 
 class Student(models.Model):
     """Класс ученика/студента"""
@@ -115,15 +118,18 @@ class Student(models.Model):
     start_learning = models.DateField(verbose_name='Начало обучения', blank=True, auto_now=True)
     end_learning = models.DateField(verbose_name='Конец обучения', blank=True, null=True)
     parents = models.ManyToManyField('users.ParentsStudent', verbose_name='Родители', blank=True)
-    educational_class = models.ForeignKey(school_structure.models.EducationalСlass, verbose_name='Образовательный класс',
-                                        on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    score = models.ManyToManyField(school_structure.models.ScoreStudent, verbose_name='оценки', blank=True, related_name='students')
+    educational_class = models.ForeignKey(school_structure.models.EducationalСlass,
+                                          verbose_name='Образовательный класс',
+                                          on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
+    score = models.ManyToManyField(school_structure.models.ScoreStudent, verbose_name='оценки', blank=True,
+                                   related_name='students')
 
     class Meta:
         verbose_name = 'Учащийся'
 
     def __str__(self):
         return self.user.full_name
+
 
 class ParentsStudent(models.Model):
     first_name = models.CharField(verbose_name='Имя', max_length=255)
@@ -135,24 +141,3 @@ class ParentsStudent(models.Model):
     class Meta:
         verbose_name = 'Родители'
         unique_together = ('first_name', 'last_name', 'phone_number')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
