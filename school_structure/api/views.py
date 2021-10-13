@@ -1,22 +1,45 @@
 from rest_framework import viewsets
-from rest_framework.response import Response
-
+from rest_framework.pagination import PageNumberPagination
 from school_structure.models import *
-from .serializers import SchoolSerializer,EducationalСlassSerializer
+from .mixins import MixinSerializer
+from .serializers import (
+    SchoolSerializer,
+    EducationalСlassSerializer,
+    ListEducationalСlassSerializer,
+    SubjectSerializer,
+    TimeTableSerializer
+)
+
+
+class SchoolPagination(PageNumberPagination):
+    page_size = 1000
+    page_size_query_param = 'page_size'
+    max_page_size = 10000
 
 class SchoolView(viewsets.ModelViewSet):
-    queryset = School.objects.all()
+    queryset = School.objects.all_with_counts()
     serializer_class = SchoolSerializer
 
-class EducationalСlassView(viewsets.ModelViewSet):
+class SubjectView(viewsets.ModelViewSet):
+    queryset = Subject.objects.all()
+    serializer_class = SubjectSerializer
+
+class EducationalСlassView(MixinSerializer, viewsets.ModelViewSet):
     queryset = EducationalСlass.objects.all()
     serializer_class = EducationalСlassSerializer
+    serializer_class_by_action = {
+        'list': ListEducationalСlassSerializer
+    }
 
-    def create(self, request, *args, **kwargs):
-        name = request.data.get('name')
-        if name:
-            request.data['name'] = name.replace(' ', '')
-        return  super().create(request, *args, **kwargs)
+    # def get_serializer_class(self):
+    #     if self.action == 'list':
+    #         return ListEducationalСlassSerializer
+    #     return EducationalСlassSerializer
+
+
+class TimeTableView(viewsets.ModelViewSet):
+    queryset = TimeTable.objects.all()
+    serializer_class = TimeTableSerializer
 
 
 
