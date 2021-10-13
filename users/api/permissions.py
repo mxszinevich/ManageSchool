@@ -1,20 +1,61 @@
 from rest_framework import permissions
 
-class MixedPermission:
-    """ Permissions action`s mixin"""
-    def get_permissions(self):
-        try:
-            return [permission_classes() for permission_classes in self.permission_classes_by_action[self.action]]
-        except KeyError:
-            return [permission_classes() for permission_classes in self.permission_classes]
+from users.models import StaffUser
 
-class EducationClassesPermissions(permissions.BasePermission):
+SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
+
+
+class StaffUserPermissions(permissions.BasePermission):
+    def has_permission(self, request, view):
+        try:
+            if view.action == 'list' and request.user.is_authenticated:
+                return True
+            elif view.action in ['create', 'update', 'destroy'] \
+                    and (request.user.is_staff or request.user.staff.position in [
+                StaffUser.POSITION_DIRECTOR,
+                StaffUser.POSITION_ADMINISTRATOR,
+            ]):
+                return True
+
+        except AttributeError:
+            return False
+
+        return False
+
+
+    def has_object_permission(self, request, view, obj):
+        print(request.user.is_staff)
+        try:
+            if request.user.is_staff or request.user.staff.position in [
+                StaffUser.POSITION_DIRECTOR,
+                StaffUser.POSITION_ADMINISTRATOR,
+            ]:
+                return True
+        except AttributeError:
+            return False
+
+
+class StudentUserPermissions(permissions.BasePermission):
+    def has_permission(self, request, view):
+        try:
+            if request.user.is_staff or request.user.staff:  # Могут просматривать только сотрудники
+                return True
+        except AttributeError:
+            return False
+
+
+class StudentInfoPermissions(permissions.BasePermission):
+    """Сведения о ученике могут просматривать сотрудники и сам ученик"""
     def has_permission(self, request, view):
         if request.user.is_authenticated:
             return True
         return False
 
-    # def has_object_permission(self, request, view, obj):
-    #     if obj.author == request.user:
-    #         return True
-    #     return False
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        try:
+            if user.student == obj:
+                return True
+            return False
+        except AttributeError:
+            return True

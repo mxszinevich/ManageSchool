@@ -48,7 +48,7 @@ class User(AbstractBaseUser):
     extra_info = models.JSONField(verbose_name='Дополнительная информация', blank=True, null=True)
     is_account_confirmation = models.BooleanField(verbose_name='Подтверждение аккаунта в системе', default=False)
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)  #admin
     is_admin = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'  # @TODO хотелось бы попробовать добавить регистрацию и по логину
@@ -111,13 +111,18 @@ class StaffUser(models.Model):
     class Meta:
         verbose_name = 'Сотрудник'
 
+    def delete(self, using=None, keep_parents=False):
+        self.user.delete()
+        super(StaffUser, self).delete(using=None, keep_parents=False)
+
+
 
 class Student(models.Model):
-    """Класс ученика/студента"""
+    """Класс студента"""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='student')
     start_learning = models.DateField(verbose_name='Начало обучения', blank=True, auto_now=True)
     end_learning = models.DateField(verbose_name='Конец обучения', blank=True, null=True)
-    parents = models.ManyToManyField('users.ParentsStudent', verbose_name='Родители', blank=True)
+    parents = models.ManyToManyField('users.ParentsStudent', verbose_name='Родители', blank=True, null=True)
     educational_class = models.ForeignKey(school_structure.models.EducationalСlass,
                                           verbose_name='Образовательный класс',
                                           on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
@@ -129,6 +134,10 @@ class Student(models.Model):
 
     def __str__(self):
         return self.user.full_name
+
+    def delete(self, using=None, keep_parents=False):
+        self.user.delete()
+        super(Student, self).delete(using=None, keep_parents=False)
 
 
 class ParentsStudent(models.Model):

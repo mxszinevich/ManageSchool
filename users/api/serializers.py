@@ -1,5 +1,4 @@
 from rest_framework import serializers, exceptions
-from rest_framework.decorators import action
 
 from school_structure.models import Subject
 from users.models import User, StaffUser, Student, ParentsStudent
@@ -7,6 +6,8 @@ from school_structure.models import EducationalСlass
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор пользователя для GET, POST, DELETE запросов"""
+
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name',
@@ -16,44 +17,81 @@ class UserSerializer(serializers.ModelSerializer):
                   )
         extra_kwargs = {
             'password': {'write_only': True},
-           # 'is_account_confirmation': {'write_only': True},
+            # 'is_account_confirmation': {'write_only': True},
         }
-        ref_name = 'ProjectBaseUser'
+        ref_name = 'ProjectBaseUser'  # Необходимо для djoser
 
-class UpdateUserSerializer(serializers.Serializer):
-    is_account_confirmation = serializers.BooleanField()
+
+class UpdateUserSerializer(UserSerializer):
+    """Сериализатор пользователя для PUT запросов"""
+    email = serializers.CharField(max_length=200)
+    password = serializers.CharField(write_only=True, required=False)
+    phone_number = serializers.CharField()
+    is_account_confirmation = serializers.BooleanField(write_only=True, required=False)
+
+
+class ReadAllUserSerializer(serializers.ModelSerializer):
+    """Сериализатор пользователя для просмотра неавторизованными пользователями"""
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'middle_name', 'email', 'image',)
 
 
 class StaffUserSerializer(serializers.ModelSerializer):
-    personal_info = UpdateUserSerializer(source='user')
+    """Сериализатор сотрудника для GET, POST, DELETE запросов"""
+    personal_info = UserSerializer(source='user')
 
     class Meta:
         model = StaffUser
         fields = ('id', 'personal_info', 'position', 'school')
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data.pop('user')) # @TODO create ?
+        user = User.objects.create_user(**validated_data.pop('user'))
         staff = StaffUser.objects.create(user=user, **validated_data)
         return staff
 
+
+class UpdateStaffUserSerializer(serializers.ModelSerializer):
+    """Сериализатор сотрудника для Update запросов"""
+    personal_info = UpdateUserSerializer(source='user')
+
+    class Meta:
+        model = StaffUser
+        fields = ('id', 'personal_info', 'position', 'school')
+
     def update(self, instance, validated_data):
-        user = User.objects.filter(id=instance.user_id).update(**validated_data.pop('user'))
+        """"Метод обновления персонала"""
+        new_user_password = validated_data['user'].pop('password', None)
+        User.objects.filter(id=instance.user_id).update(**validated_data.pop('user'))
+        if new_user_password:
+            user = User.objects.get(id=instance.user_id)
+            user.set_password(new_user_password)
+            user.save(update_fields=['password'])
+        StaffUser.objects.filter(id=instance.id).update(**validated_data)
         staff_user = StaffUser.objects.get(id=instance.id)
-        staff_user.position = validated_data['position']
-        staff_user.school = validated_data['school']
-        staff_user.save(update_fields=[*validated_data])
         return staff_user
 
 
 
+class ReadAllStaffUserSerializer(serializers.ModelSerializer):
+    """Сериализатор сотрудника для просмотра неавторизованным пользователям"""
+    personal_info = ReadAllUserSerializer(source='user')
+
+    class Meta:
+        model = StaffUser
+        fields = ('personal_info', 'position', 'school')
 
 
 class ParentsStudentSerializer(serializers.ModelSerializer):
+    """Сериализатор родителей"""
+
     class Meta:
         model = ParentsStudent
         fields = '__all__'
 
 
+# @TODO перенести в другое место
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
@@ -61,8 +99,9 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
+    """Сериализатор студента для GET, POST, запросов"""
     personal_info = UserSerializer(source='user')
-    educational_class = serializers.CharField()
+    educational_class = serializers.IntegerField(source='educational_class_id')
     parents = ParentsStudentSerializer(many=True, required=False)
 
     class Meta:
@@ -77,20 +116,39 @@ class StudentSerializer(serializers.ModelSerializer):
         }
         return representation
 
-    def update(self, instance, validated_data):
-        User.objects.filter(id=instance.user_id).update(**validated_data['user'])
-
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data.pop('user'))
         try:
-            student = Student.objects.get(id=instance.id)
-            educational_class = EducationalСlass.objects.only('id').get(id=int(validated_data['educational_class']))
-        except Student.DoesNotExist:
-            raise exceptions.APIException(detail='Student DoesNotExist')
-        except EducationalСlass.DoesNotExist:
-            raise exceptions.APIException(detail='EducationalСlass DoesNotExist')
-        except ValueError:
-            raise exceptions.APIException(detail='EducationalClass not int')
+            parents = validated_data.pop('parents', None)
+            student = Student.objects.create(user=user, **validated_data)
+            if parents:
+                student.parents.set(parents)
+                student.save()
+        except Exception as ex:
+            user.delete()
+            raise exceptions.APIException(detail='Ошибка создания пользователя')
+        return student
 
-        student.educational_class_id = educational_class.id
-        student.save(update_fields=['educational_class_id'])
 
+class UpdateStudentSerializer(UpdateStaffUserSerializer):
+    """Сериализатор студента для PUT запросов"""
+    educational_class = serializers.IntegerField(source='educational_class_id')
+    parents = ParentsStudentSerializer(many=True, required=False)
+
+    class Meta:
+        model = Student
+        fields = ('id', 'educational_class', 'personal_info', 'parents')
+
+    def update(self, instance, validated_data):
+        new_password_user = validated_data['user'].pop('password', None)
+        User.objects.filter(id=instance.user_id).update(**validated_data.pop('user'))
+        if new_password_user:
+            user = User.objects.get(id=instance.user_id)
+            user.set_password(new_password_user)
+            user.save(update_fields=['password'])
+        parents = validated_data.pop('parents', None)
+        Student.objects.filter(id=instance.id).update(**validated_data)
+        student = Student.objects.get(id=instance.id)
+        if parents:
+            student.parents.set(parents)
         return student
