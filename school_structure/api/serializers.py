@@ -119,6 +119,13 @@ class TimeTableSerializer(TimeTableUserSerializer):
         return timetable
 
 
+class TimeTableBaseSerializer(serializers.ModelSerializer):
+    """Сериализатор общего расписания"""
+    class Meta:
+        model = TimeTable
+        exclude = ['topic']
+
+
 class ScoreStudentSerializer(serializers.Serializer):
     """Сериализатор оценки студента"""
     value = serializers.IntegerField()

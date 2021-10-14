@@ -86,7 +86,7 @@ class StudentsListView(MixedPermissionSerializer, viewsets.ModelViewSet):
 
     @action(methods=['GET'], detail=True)
     def student_timetable(self, *args, **kwargs):
-        """Метод получение расписания конкретного студента"""
+        """Метод получение расписания студента"""
         student = self.get_object()
         timetable = TimeTable.objects.filter(classes__id=student.educational_class_id)
         if timetable:

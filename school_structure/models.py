@@ -125,8 +125,8 @@ class TimeTable(models.Model):
     subject = models.ForeignKey(Subject, verbose_name='Предмет', on_delete=models.CASCADE, blank=True)
     topic = models.ManyToManyField(Topic, verbose_name='Темы занятий', blank=True, null=True)
     day = models.PositiveSmallIntegerField(verbose_name='День недели', choices=DAYS_TYPES)
-    start_time = models.TimeField(verbose_name='Начало работы')
-    end_time = models.TimeField(verbose_name='Конец работы', blank=True)
+    start_time = models.TimeField(verbose_name='Начало работы', blank=True, null=True)
+    end_time = models.TimeField(verbose_name='Конец работы', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Расписание'
