@@ -8,8 +8,9 @@ __all__ = ('School', 'EducationalСlass', 'DirectionScience', \
 
 
 class SchollManager(models.Manager):
-
+    """Менеджер модели школы"""
     def all_with_counts(self):
+        """Метод получения кол-ва элементов в структуре школы"""
         return School.objects.only('id').annotate(count_directions=Count('directions', distinct=True)) \
             .annotate(count_students=Count('classes__students', distinct=True)) \
             .annotate(count_classes=Count('classes', distinct=True)) \
@@ -17,23 +18,39 @@ class SchollManager(models.Manager):
 
 
 class School(models.Model):
-    """Образовательное учреждение"""
+    """Модель школы"""
     name = models.CharField(max_length=300, verbose_name='Название школы')
     addres = models.CharField(max_length=300, verbose_name='Адресс школы')
     email = models.EmailField(max_length=100, verbose_name='Электронный адрес')
-
     objects = SchollManager()
 
     class Meta:
         verbose_name = 'Образовательная организация'
         verbose_name = 'Образовательная организации'
 
+    @property
+    def director(self):
+        """Директор школы"""
+        from users.models import StaffUser
+        director = StaffUser.objects.filter(position=StaffUser.POSITION_DIRECTOR, school_id=self.id).first()
+        return director
+
+    @property
+    def administrations(self):
+        """Администрация школы"""
+        from users.models import StaffUser
+        admins = StaffUser.objects.filter(
+            position=StaffUser.POSITION_ADMINISTRATOR,
+            school_id=self.id)
+
+        return admins
+
     def __str__(self):
         return self.name
 
 
 class EducationalСlass(models.Model):
-    """Учебные классы"""
+    """Модель учебного класса"""
     name = models.CharField(max_length=300, verbose_name='Название класса',
                             unique=True, error_messages={'unique': "Класс с таким именем уже существует"}
                             )
@@ -55,7 +72,7 @@ class EducationalСlass(models.Model):
 
 
 class DirectionScience(models.Model):
-    """Учебные направления"""
+    """Модель учебного направления"""
     name = models.CharField(max_length=300, verbose_name='Название направления')
     school = models.ForeignKey(School, verbose_name='Школа', related_name='directions', on_delete=models.CASCADE)
 
@@ -72,7 +89,7 @@ class DirectionScience(models.Model):
 
 
 class Topic(MPTTModel):
-    """Тема занятия"""
+    """Модель темы занятий"""
     name = models.CharField(max_length=300, verbose_name='Название темы')
     parent = TreeForeignKey('self', blank=True, null=True, on_delete=models.CASCADE)
 
@@ -85,7 +102,7 @@ class Topic(MPTTModel):
 
 
 class Subject(models.Model):
-    """Учебный предмет"""
+    """Модель Учебного предмета"""
     name = models.CharField(max_length=300, verbose_name='Название Предмета')
     topic = models.ManyToManyField(Topic, verbose_name='Тема занятий', null=True, blank=True)
     direction_science = models.ForeignKey(DirectionScience, verbose_name='Учебное направление', related_name='subjects',
@@ -101,7 +118,7 @@ class Subject(models.Model):
 
 
 class TimeTable(models.Model):
-    """Расписание занятий"""
+    """Модель расписания занятий"""
     DAYS_TYPES = ((1, 'Понедельник'), (2, 'Вторник'), (3, 'Среда'), (4, 'Четверг'),
                   (5, 'Пятница'), (6, 'Суббота'), (7, 'Воскресенье')
                   )
@@ -120,6 +137,7 @@ class TimeTable(models.Model):
 
 
 class ScoreStudent(models.Model):
+    """Модель оценок студента"""
     value = models.PositiveSmallIntegerField(verbose_name='Оценка',
                                              validators=[MinValueValidator(0), MaxValueValidator(5)]
                                              )

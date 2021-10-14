@@ -2,10 +2,11 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
 from school_structure.models import *
-from users.api.serializers import StudentSerializer, StaffUserSerializer
+from users.api.serializers import StudentSerializer, AdministrationSchoolSerializer
 
 
 class DirectionScienceSerializer(serializers.ModelSerializer):
+    """Сериализатор учебного направления"""
     class Meta:
         model = DirectionScience
         fields = ('id', 'name', 'count_programs')
@@ -13,6 +14,7 @@ class DirectionScienceSerializer(serializers.ModelSerializer):
 
 
 class SubjectSerializer(serializers.ModelSerializer):
+    """Сериализатор учебного предмета"""
     class Meta:
         model = Subject
         fields = ('id', 'name', 'direction_science')
@@ -27,22 +29,24 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 
 class SchoolSerializer(serializers.ModelSerializer):
+    """Сериализатор школы"""
     # @TODO: дописать руководство
     direction_science = DirectionScienceSerializer(many=True, source='directions')
-    staff = StaffUserSerializer(many=True)
     count_directions = serializers.IntegerField()
     count_students = serializers.IntegerField()
     count_classes = serializers.IntegerField()
     count_subjects = serializers.IntegerField()
-
+    director = AdministrationSchoolSerializer()
+    administrations = AdministrationSchoolSerializer(many=True)
     class Meta:
         model = School
-        fields = ('id', 'name', 'addres', 'email',
+        fields = ('name', 'addres', 'email', 'director', 'administrations',
                   'count_directions', 'count_students', 'count_classes', 'count_subjects',
-                  'direction_science', 'staff')
+                  'direction_science')
 
 
 class EducationalСlassSerializer(serializers.ModelSerializer):
+    """Сериализатор учебного класса"""
     students = StudentSerializer(many=True, read_only=True)
 
     class Meta:
@@ -57,6 +61,7 @@ class EducationalСlassSerializer(serializers.ModelSerializer):
 
 
 class ListEducationalСlassSerializer(serializers.ModelSerializer):
+    """Сериализатор списка учебных классов"""
     id = serializers.IntegerField()
 
     class Meta:
@@ -66,12 +71,14 @@ class ListEducationalСlassSerializer(serializers.ModelSerializer):
 
 
 class TopicSerializer(serializers.ModelSerializer):
+    """Сериализатор учебной темы"""
     class Meta:
         model = Topic
         fields = ('id', 'name', 'parent_id')
 
 
 class TimeTableUserSerializer(serializers.ModelSerializer):
+    """Сериализатор расписания конкретного студента"""
     topic = TopicSerializer(many=True, required=False)
     end_time = serializers.TimeField(required=True)
 
@@ -90,6 +97,7 @@ class TimeTableUserSerializer(serializers.ModelSerializer):
 
 
 class TimeTableSerializer(TimeTableUserSerializer):
+    """Сериализатор общего расписания"""
     classes = ListEducationalСlassSerializer(many=True)
 
     # @ TODO добавить расписание класса
@@ -112,6 +120,7 @@ class TimeTableSerializer(TimeTableUserSerializer):
 
 
 class ScoreStudentSerializer(serializers.Serializer):
+    """Сериализатор оценки студента"""
     value = serializers.IntegerField()
     subject = serializers.CharField()
     date = serializers.DateField()

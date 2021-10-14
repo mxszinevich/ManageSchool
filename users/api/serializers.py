@@ -73,7 +73,6 @@ class UpdateStaffUserSerializer(serializers.ModelSerializer):
         return staff_user
 
 
-
 class ReadAllStaffUserSerializer(serializers.ModelSerializer):
     """Сериализатор сотрудника для просмотра неавторизованным пользователям"""
     personal_info = ReadAllUserSerializer(source='user')
@@ -83,18 +82,17 @@ class ReadAllStaffUserSerializer(serializers.ModelSerializer):
         fields = ('personal_info', 'position', 'school')
 
 
+class AdministrationSchoolSerializer(serializers.Serializer):
+    """Сериализатор администрации школы"""
+    name = serializers.CharField(source='user.full_name')
+    email = serializers.EmailField(source='user.email')
+
+
 class ParentsStudentSerializer(serializers.ModelSerializer):
     """Сериализатор родителей"""
 
     class Meta:
         model = ParentsStudent
-        fields = '__all__'
-
-
-# @TODO перенести в другое место
-class SubjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subject
         fields = '__all__'
 
 

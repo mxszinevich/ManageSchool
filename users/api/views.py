@@ -30,7 +30,7 @@ from ..serializers import CustomTokenObtainSerializer
 
 
 class TokenObtainView(TokenViewBase):
-    """Кастомное представление для получения jwt-токена"""
+    """Кастомное представление получения jwt-токена"""
     serializer_class = CustomTokenObtainSerializer
 
 
@@ -41,7 +41,7 @@ class StudentsResultsSetPagination(PageNumberPagination):
 
 
 class StaffListView(MixedPermission, viewsets.ModelViewSet):
-    """Престдавление для сотрудников"""
+    """Представление для сотрудников"""
     queryset = StaffUser.objects.all()
     serializer_class = ReadAllStaffUserSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, ]
@@ -69,6 +69,7 @@ class StaffListView(MixedPermission, viewsets.ModelViewSet):
 
 
 class StudentsListView(MixedPermissionSerializer, viewsets.ModelViewSet):
+    """Представления для студентов"""
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     pagination_class = StudentsResultsSetPagination
@@ -85,6 +86,7 @@ class StudentsListView(MixedPermissionSerializer, viewsets.ModelViewSet):
 
     @action(methods=['GET'], detail=True)
     def student_timetable(self, *args, **kwargs):
+        """Метод получение расписания конкретного студента"""
         student = self.get_object()
         timetable = TimeTable.objects.filter(classes__id=student.educational_class_id)
         if timetable:
@@ -97,8 +99,8 @@ class StudentsListView(MixedPermissionSerializer, viewsets.ModelViewSet):
 
     @action(methods=['GET'], detail=True)
     def students_scores(self, *args, **kwargs):
+        """Метод получение оценок студентов"""
         student = self.get_object()
-
         # Фильтрация оценок по предмету
         query_params = args[0].query_params  # Request
         subject_filter = Q()
