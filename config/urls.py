@@ -21,7 +21,7 @@ urlpatterns = [
     path('api/users/', include('users.urls')),
     path('api/school/', include('school_structure.urls')),
     path('auth/', include('djoser.urls')),  # URLS
-    path('auth/login/', TokenObtainView.as_view()),
+    path('auth/login/', TokenObtainView.as_view(), name='token_create'),
     path('auth/', include('djoser.urls.jwt')),
 
 ]

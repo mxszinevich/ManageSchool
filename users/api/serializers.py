@@ -1,8 +1,12 @@
+from django.core.mail import send_mail
+from django.db import IntegrityError
+from django.db.models import Q
 from rest_framework import serializers, exceptions
+from rest_framework.exceptions import ValidationError
 
-from school_structure.models import Subject
+from config import settings
+from notifications.models import Email
 from users.models import User, StaffUser, Student, ParentsStudent
-from school_structure.models import EducationalСlass
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -63,11 +67,32 @@ class UpdateStaffUserSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """"Метод обновления персонала"""
         new_user_password = validated_data['user'].pop('password', None)
+
+        exists_unique_fields = []
+        if validated_data['user']['email'] != instance.user.email:
+            if User.objects.filter(email=validated_data['user']['email']):
+                exists_unique_fields.append({'email': 'Пользователь с таким email уже существует'})
+        if validated_data['user']['phone_number'] != instance.user.phone_number:
+            if User.objects.filter(phone_number=validated_data['user']['phone_number']):
+                exists_unique_fields.append({'phone_number': 'Пользователь с таким phone_number уже существует'})
+        if exists_unique_fields:
+            raise ValidationError(exists_unique_fields)
+
+        is_account_confirmation = validated_data['user'].get('is_account_confirmation')
+        if is_account_confirmation and is_account_confirmation != instance.user.is_account_confirmation:
+            # Создаем уведомление
+            email = Email(theme='Изменение статуса', body='Статус изменен')
+            email.save()
+            email.recipients.add(instance.user)
+            email.send()  # Отправляем уведомление
+
         User.objects.filter(id=instance.user_id).update(**validated_data.pop('user'))
+
         if new_user_password:
             user = User.objects.get(id=instance.user_id)
             user.set_password(new_user_password)
             user.save(update_fields=['password'])
+
         StaffUser.objects.filter(id=instance.id).update(**validated_data)
         staff_user = StaffUser.objects.get(id=instance.id)
         return staff_user
@@ -97,6 +122,7 @@ class ParentsStudentSerializer(serializers.ModelSerializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
+    # @ Кеширование - Redis
     """Сериализатор студента для GET, POST, запросов"""
     personal_info = UserSerializer(source='user')
     educational_class = serializers.IntegerField(source='educational_class_id')
@@ -140,10 +166,12 @@ class UpdateStudentSerializer(UpdateStaffUserSerializer):
     def update(self, instance, validated_data):
         new_password_user = validated_data['user'].pop('password', None)
         User.objects.filter(id=instance.user_id).update(**validated_data.pop('user'))
+
         if new_password_user:
             user = User.objects.get(id=instance.user_id)
             user.set_password(new_password_user)
             user.save(update_fields=['password'])
+
         parents = validated_data.pop('parents', None)
         Student.objects.filter(id=instance.id).update(**validated_data)
         student = Student.objects.get(id=instance.id)

@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenViewBase
 
@@ -44,7 +44,7 @@ class StaffListView(MixedPermission, viewsets.ModelViewSet):
     """Представление для сотрудников"""
     queryset = StaffUser.objects.all()
     serializer_class = ReadAllStaffUserSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, ]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     staff_serializer_class_by_action = {
         'update': UpdateStaffUserSerializer,
@@ -53,10 +53,12 @@ class StaffListView(MixedPermission, viewsets.ModelViewSet):
     }
 
     permission_classes_by_action = {
-        'update': [StaffUserPermissions, ],
-        'create': [StaffUserPermissions, ],
-        'destroy': [StaffUserPermissions, ]
+        'update': [StaffUserPermissions],
+        'create': [AllowAny],
+        'destroy': [StaffUserPermissions]
     }
+
+    # @TODO list - два сериализатора в зависимости от user
 
     def get_serializer_class(self):
         try:
@@ -106,7 +108,6 @@ class StudentsListView(MixedPermissionSerializer, viewsets.ModelViewSet):
         subject_filter = Q()
         value_filter = Q()
         month_filter = Q()
-        print(query_params.getlist('subject'))
         if query_params:
             try:
                 if query_params.getlist('subject'):
@@ -125,3 +126,4 @@ class StudentsListView(MixedPermissionSerializer, viewsets.ModelViewSet):
         serializer = ScoreStudentSerializer(student.score.filter(scores_filter).order_by('subject'), many=True)
 
         return Response(serializer.data)
+

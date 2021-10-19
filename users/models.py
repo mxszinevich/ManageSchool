@@ -104,7 +104,7 @@ class StaffUser(models.Model):
                                verbose_name='Образовательная организация', on_delete=models.CASCADE,
                                blank=True, null=True, related_name='staff')
     timetable = models.ManyToManyField(TimeTable, verbose_name='График работы',
-                                       related_name='staff_users', blank=True, )
+                                       related_name='staff_users', blank=True)
 
     def __str__(self):
         return self.user.full_name
@@ -113,6 +113,7 @@ class StaffUser(models.Model):
         verbose_name = 'Сотрудник'
 
     def delete(self, using=None, keep_parents=False):
+        # @TODO Удаление пользователей
         self.user.delete()
         super(StaffUser, self).delete(using=None, keep_parents=False)
 
@@ -136,6 +137,7 @@ class Student(models.Model):
         return self.user.full_name
 
     def delete(self, using=None, keep_parents=False):
+        # @TODO Удаление пользователей
         self.user.delete()
         super(Student, self).delete(using=None, keep_parents=False)
 

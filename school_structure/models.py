@@ -38,6 +38,7 @@ class School(models.Model):
     @property
     def administrations(self):
         """Администрация школы"""
+        # @TODO Циклический импорт
         from users.models import StaffUser
         admins = StaffUser.objects.filter(
             position=StaffUser.POSITION_ADMINISTRATOR,
