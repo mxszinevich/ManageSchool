@@ -54,11 +54,9 @@ class StaffListView(MixedPermission, viewsets.ModelViewSet):
 
     permission_classes_by_action = {
         'update': [StaffUserPermissions],
-        'create': [AllowAny],
+        'create': [AllowAny],  # Создать сотрудника может только персонал
         'destroy': [StaffUserPermissions]
     }
-
-    # @TODO list - два сериализатора в зависимости от user
 
     def get_serializer_class(self):
         try:

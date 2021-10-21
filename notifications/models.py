@@ -13,9 +13,9 @@ class Email(models.Model):
     def __str__(self):
         return self.theme
 
-    def send(self, *args, **kwargs):
+    def send_email(self, *args, **kwargs):
         recipients = list(self.recipients.only('email').all().values_list('email', flat=True))
-        # send_mail(self.theme, self.body, settings.EMAIL_HOST_USER, recipients)
+        send_mail(self.theme, self.body, settings.EMAIL_HOST_USER, recipients)
 
 
 
