@@ -22,15 +22,15 @@ class StaffUserPermissions(permissions.BasePermission):
 
         return False
 
-
     def has_object_permission(self, request, view, obj):
-        print(request.user.is_staff)
         try:
             if request.user.is_staff or request.user.staff.position in [
                 StaffUser.POSITION_DIRECTOR,
                 StaffUser.POSITION_ADMINISTRATOR,
             ]:
                 return True
+            else:
+                return False
         except AttributeError:
             return False
 
@@ -38,7 +38,7 @@ class StaffUserPermissions(permissions.BasePermission):
 class StudentUserPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
         try:
-            if request.user.is_staff or request.user.staff:  # Могут просматривать только сотрудники
+            if request.user.is_staff or request.user.staff:  # Могут просматривать, изменять и создавать только сотрудники
                 return True
         except AttributeError:
             return False
@@ -54,8 +54,11 @@ class StudentInfoPermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
         try:
-            if user.student == obj:
+            if user.is_staff or getattr(user, 'student', False):
+                if user.student == obj:
+                    return True
+            elif user.is_staff or getattr(user, 'staff', False):
                 return True
             return False
         except AttributeError:
-            return True
+            return False

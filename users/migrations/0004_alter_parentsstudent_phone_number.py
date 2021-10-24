@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='parentsstudent',
             name='phone_number',
-            field=models.CharField(blank=True, max_length=20, unique=True, validators=[users.utils._phone_validation], verbose_name='Телефонный номер'),
+            field=models.CharField(blank=True, max_length=20, unique=True, validators=[users.utils.phone_validation], verbose_name='Телефонный номер'),
         ),
     ]

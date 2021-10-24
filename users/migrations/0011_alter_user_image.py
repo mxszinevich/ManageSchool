@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='image',
-            field=models.ImageField(blank=True, null=True, upload_to=users.utils._create_path_media_user, verbose_name='Изображение'),
+            field=models.ImageField(blank=True, null=True, upload_to=users.utils.create_path_media_user, verbose_name='Изображение'),
         ),
     ]
