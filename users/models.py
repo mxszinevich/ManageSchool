@@ -45,7 +45,7 @@ class User(AbstractBaseUser):
                               upload_to=users.utils.create_path_media_user)
     date_of_birth = models.DateField(verbose_name='Дата рождения')
     phone_number = models.CharField(verbose_name='Телефонный номер', validators=[users.utils.phone_validation],
-                                    max_length=30, blank=True, unique=True)
+                                    max_length=30, blank=True, unique=True, null=True)
     extra_info = models.JSONField(verbose_name='Дополнительная информация', blank=True, null=True)
     is_account_confirmation = models.BooleanField(verbose_name='Подтверждение аккаунта в системе', default=False)
     is_active = models.BooleanField(default=True)
@@ -57,7 +57,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     def __str__(self):
-        return f'{self.email}'
+        return f'{self.pk}: {self.email}'
 
     @property
     def full_name(self):
@@ -107,7 +107,7 @@ class StaffUser(models.Model):
                                        related_name='staff_users', blank=True)
 
     def __str__(self):
-        return self.user.full_name
+        return f'{self.pk}: {self.user.full_name}'
 
     class Meta:
         verbose_name = 'Сотрудник'
@@ -134,7 +134,7 @@ class Student(models.Model):
         verbose_name = 'Учащийся'
 
     def __str__(self):
-        return self.user.full_name
+        return f'{self.pk}: {self.user.full_name}'
 
     def delete(self, using=None, keep_parents=False):
         # @TODO Удаление пользователей
@@ -148,8 +148,8 @@ class ParentsStudent(models.Model):
     last_name = models.CharField(verbose_name='Фамилия', max_length=255)
     middle_name = models.CharField(verbose_name='Отчество', max_length=255, blank=True)
     phone_number = models.CharField(verbose_name='Телефонный номер', validators=[users.utils.phone_validation],
-                                    max_length=30, blank=True, unique=True)
+                                    max_length=30, blank=True, unique=True, null=True)
 
     class Meta:
         verbose_name = 'Родители'
-        unique_together = ('first_name', 'last_name', 'phone_number')
+        # unique_together = ('first_name', 'last_name', 'phone_number')

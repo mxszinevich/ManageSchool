@@ -3,8 +3,7 @@ from django.db import models
 from django.db.models import Count
 from mptt.models import MPTTModel, TreeForeignKey
 
-__all__ = ('School', 'EducationalСlass', 'DirectionScience', \
-           'Topic', 'Subject', 'TimeTable', 'ScoreStudent')
+__all__ = ('School', 'EducationalСlass', 'DirectionScience', 'Topic', 'Subject', 'TimeTable', 'ScoreStudent')
 
 
 class SchollManager(models.Manager):
@@ -20,7 +19,7 @@ class SchollManager(models.Manager):
 class School(models.Model):
     """Модель школы"""
     name = models.CharField(max_length=300, verbose_name='Название школы')
-    addres = models.CharField(max_length=300, verbose_name='Адресс школы')
+    address = models.CharField(max_length=300, verbose_name='Адресс школы')
     email = models.EmailField(max_length=100, verbose_name='Электронный адрес')
     objects = SchollManager()
 

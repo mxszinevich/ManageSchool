@@ -6,7 +6,7 @@ class SchoolBaseAdministrationPermissions(BasePermission):
     """Разрешения для администрирования(управления) школой"""
     def has_permission(self, request, view):
         try:
-            if request.user.is_staff or request.user.staff.positon in [
+            if request.user.is_staff or request.user.staff.position in [
                 StaffUser.POSITION_ADMINISTRATOR,
                 StaffUser.POSITION_DIRECTOR
             ]:

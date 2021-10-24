@@ -30,7 +30,7 @@ class SchoolView(viewsets.ModelViewSet):
 
 
 class SubjectView(MixinPermissions, viewsets.ModelViewSet):
-    """Представление предмета"""
+    """Представление школьного предмета"""
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     permission_classes = [SchoolBaseAdministrationPermissions]

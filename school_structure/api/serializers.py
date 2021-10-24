@@ -40,7 +40,7 @@ class SchoolSerializer(serializers.ModelSerializer):
     administrations = AdministrationSchoolSerializer(many=True)
     class Meta:
         model = School
-        fields = ('name', 'addres', 'email', 'director', 'administrations',
+        fields = ('name', 'address', 'email', 'director', 'administrations',
                   'count_directions', 'count_students', 'count_classes', 'count_subjects',
                   'direction_science')
 
@@ -82,11 +82,9 @@ class TimeTableUserSerializer(serializers.ModelSerializer):
     topic = TopicSerializer(many=True, required=False)
     end_time = serializers.TimeField(required=True)
 
-    # day = DAYserializer(read_only=True)
-    # day_id = DAYserializer(write_only=True)
     class Meta:
         model = TimeTable
-        fields = ('id', 'day', 'topic', 'subject', 'end_time', 'classes')
+        fields = ('id', 'day', 'topic', 'subject', 'start_time', 'end_time', 'classes')
 
     def to_representation(self, instance):  # Сериализатор
         representation = super(TimeTableUserSerializer, self).to_representation(instance)
