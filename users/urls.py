@@ -14,4 +14,5 @@ urlpatterns = [
     path('students/<int:pk>', StudentsListView.as_view({'get': 'retrieve', 'put': 'update'})),
     path('students/<int:pk>/timetable/', StudentsListView.as_view({'get': 'student_timetable'})),
     path('students/<int:pk>/scores/', StudentsListView.as_view({'get': 'students_scores'})),
+    path('students/reports', StudentsListView.as_view({'get': 'receive_reports'})),
 ]

@@ -33,6 +33,7 @@ from .serializers import (
     UpdateStudentSerializer, RegistrationStaffUserSerializer, RegistrationStudentUserSerializer,
     ParentsStudentSerializer
 )
+from ..reports import generate_students_reports
 from ..serializers import CustomTokenObtainSerializer
 from djoser import signals, utils
 from djoser.compat import get_user_email
@@ -90,6 +91,7 @@ class StudentsListView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'students_scores': [StudentInfoPermissions, ],
         'update': [StaffUserPermissions, ],
         'retrieve': [StudentInfoPermissions, ],
+        'receive_reports': [StudentUserPermissions, ],
     }
     serializer_class_by_action = {
         'update': UpdateStudentSerializer
@@ -136,6 +138,12 @@ class StudentsListView(MixedPermissionSerializer, viewsets.ModelViewSet):
         serializer = ScoreStudentSerializer(student.score.filter(scores_filter).order_by('subject'), many=True)
 
         return Response(serializer.data)
+
+    @action(methods=['GET'], detail=False)
+    def receive_reports(self, *args, **kwargs):
+        """Метод генерирования отчета"""
+        generate_students_reports()
+        return Response('Отчет формируется')
 
 
 class ParentsStudentView(viewsets.ModelViewSet):
