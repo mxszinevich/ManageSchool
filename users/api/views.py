@@ -138,6 +138,13 @@ class StudentsListView(MixedPermissionSerializer, viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+class ParentsStudentView(viewsets.ModelViewSet):
+    """Представление родителей студента"""
+    queryset = ParentsStudent.objects.all()
+    serializer_class = ParentsStudentSerializer
+    permission_classes = [StudentUserPermissions]
+
+
 class BaseUserRegistrationView(UserViewSet):
     """
     https://github.com/sunscrapers/djoser/blob/master/djoser/views.py
@@ -173,3 +180,4 @@ class StaffUserRegisterView(BaseUserRegistrationView):
 class StudentUserRegisterView(BaseUserRegistrationView):
     """Представление для регистрации студентов школы с подтверждением email(djoser)"""
     serializer_class = RegistrationStudentUserSerializer
+

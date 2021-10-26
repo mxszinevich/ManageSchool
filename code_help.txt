@@ -1,0 +1,22 @@
+    # def raise_errors_on_nested_writes(method_name, serializer, validated_data):
+    #     print(validated_data)
+    #
+    #
+    #
+    # # def update(self, instance, validated_data):
+    # #     data_members = validated_data.pop('members')
+    # #     data_labels = validated_data.pop('labels')
+    # #     instance = super().update(instance, validated_data)
+    # #     instance.members.clear()
+    # #     instance.labels.clear()
+    # #     self.set_members(instance, data_members)
+    # #     self.set_labels(instance, data_labels)
+    # #     return instance
+    # #
+    # # def set_labels(self, instance, data_labels):
+    # #     for label in data_labels:
+    # #         add_label, _ = models.Label.objects.get_or_create(
+    # #             id=label.get('id'), boardId_id=label.get('boardId'), title=label.get('title')
+    # #         )
+    # #         instance.labels.add(add_label)
+

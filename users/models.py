@@ -148,8 +148,8 @@ class ParentsStudent(models.Model):
     last_name = models.CharField(verbose_name='Фамилия', max_length=255)
     middle_name = models.CharField(verbose_name='Отчество', max_length=255, blank=True)
     phone_number = models.CharField(verbose_name='Телефонный номер', validators=[users.utils.phone_validation],
-                                    max_length=30, blank=True, unique=True, null=True)
+                                    max_length=30, unique=True)
 
     class Meta:
         verbose_name = 'Родители'
-        # unique_together = ('first_name', 'last_name', 'phone_number')
+        unique_together = ('first_name', 'last_name', 'phone_number')

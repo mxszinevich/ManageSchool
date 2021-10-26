@@ -123,7 +123,6 @@ class ParentsStudentSerializer(serializers.ModelSerializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
-    # @ Кеширование - Redis
     """Сериализатор студента для GET, POST, запросов"""
     personal_info = UserSerializer(source='user')
     # educational_class = serializers.IntegerField(source='educational_class_id')
