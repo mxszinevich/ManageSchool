@@ -33,7 +33,7 @@ from .serializers import (
     UpdateStudentSerializer, RegistrationStaffUserSerializer, RegistrationStudentUserSerializer,
     ParentsStudentSerializer
 )
-from ..reports import generate_students_reports
+from ..tasks import generate_students_reports
 from ..serializers import CustomTokenObtainSerializer
 from djoser import signals, utils
 from djoser.compat import get_user_email
@@ -142,7 +142,7 @@ class StudentsListView(MixedPermissionSerializer, viewsets.ModelViewSet):
     @action(methods=['GET'], detail=False)
     def receive_reports(self, *args, **kwargs):
         """Метод генерирования отчета"""
-        generate_students_reports()
+        generate_students_reports.delay()
         return Response('Отчет формируется')
 
 
