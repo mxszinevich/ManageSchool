@@ -1,10 +1,10 @@
 import pandas
-from celery import shared_task
-
 from config import settings
 from config.celery import celery_app
 from users.models import User, Student
+from django.core.mail import send_mail
 
+from config import settings
 
 
 class TemplateReports:
@@ -29,3 +29,9 @@ def generate_students_reports():
         data_frame[column_name] = [User.objects.filter(id=row_data.get('user_id')).values().first().get(column_name) for row_data in table_data]
     pandas.DataFrame(data_frame).to_excel(settings.MEDIA_ROOT + '/reports/reports.xlsx')
 
+@celery_app.task
+def cancel_registration():
+    print('отправка')
+    send_mail("cron", "cron", settings.EMAIL_HOST_USER, ['maksim.zinevich@bk.ru'])
+
+    # * * * * * /usr/bin/python /ome/maksim/Рабочий стол/DjangoLearn/ManageSchool cancel_registrat
