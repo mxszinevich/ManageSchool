@@ -3,7 +3,7 @@ services:
   backend:
     build: .
     command: >
-      sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py loaddata dbv2.json && python manage.py runserver 0.0.0.0:8000"
+      sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py loaddata full_db.json && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./:/usr/src/manage_school
     ports:
@@ -29,12 +29,13 @@ services:
       - '6379:6379'
   celery:
     build: .
-    command: celery -A config worker -l info
+    command: celery -A config worker -Q emails,celery
     volumes:
       - .:/usr/src/manage_school/celery
     depends_on:
       - postgres
       - redis
+      - backend
   celery-beat:
     build: .
     command: celery -A config beat -l info
@@ -43,5 +44,25 @@ services:
     depends_on:
       - postgres
       - redis
+      - backend
+  flower:
+    build: ./
+    command: celery -A config flower
+    volumes:
+      - ./:/usr/src/flower
+    ports:
+      - 5555:5555
+    environment:
+      CELERY_BROKER_URL: redis://redis
+      CELERY_RESULT_BACKEND: redis://redis
+    depends_on:
+      - celery
+      - redis
+      - backend
 volumes:
   postgres_data:
+# > sh -c "celery -A config worker -l info && celery -A config worker -l info -Q emails -n worker2@%h"
+# sh -c "celery -A config worker -Q emails,celery"
+# sh -c "celery -A config worker -l info -Q celery && celery -A config worker -l info -Q emails"
+# sh -c "celery -A config worker -Q emails,celery"
+# sh -c 'sh ./prestart.sh'

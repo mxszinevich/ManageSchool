@@ -7,10 +7,15 @@ celery_app = Celery('config')
 celery_app.config_from_object('django.conf:settings', namespace='CELERY')
 celery_app.autodiscover_tasks()
 
+celery_app.conf.task_routes = {
+    'users.tasks.send_email': {'queue': 'emails'}
+}
+
+celery_app.conf.timezone = 'Europe/Moscow'
 
 celery_app.conf.beat_schedule = {
-    'cancel_registration': {
-        'task': 'users.tasks.cancel_registration',
-        'schedule': crontab(minute='*/1'),  # change to `crontab(minute=0, hour=0)` if you want it to run daily at midnight
+    'process_initial_notifications_about_new_users': {
+        'task': 'users.tasks.process_initial_notifications_about_new_users',
+        'schedule': crontab(minute='*/2'),
     },
 }

@@ -4,9 +4,8 @@ from rest_framework import serializers, exceptions
 from rest_framework.exceptions import ValidationError
 
 from djoser.conf import settings as djoser_settings
-from rest_framework.fields import empty
 
-from notifications.models import Email
+from notifications.models import Notifications
 from users.models import User, StaffUser, Student, ParentsStudent
 
 
@@ -82,10 +81,10 @@ class UpdateStaffUserSerializer(serializers.ModelSerializer):
         is_account_confirmation = validated_data['user'].get('is_account_confirmation')
         if is_account_confirmation and is_account_confirmation != instance.user.is_account_confirmation:
             # Создаем уведомление
-            email = Email(theme='Изменение статуса', body='Статус изменен')
-            email.save()
-            email.recipients.add(instance.user)
-            email.send_email()  # Отправляем уведомление
+            email = Notifications(theme='Изменение статуса', body='Статус изменен')
+            #email.save()
+            #email.recipients.add(instance.user)
+            #email.send_email()  # Отправляем уведомление
 
         User.objects.filter(id=instance.user_id).update(**validated_data.pop('user'))
 

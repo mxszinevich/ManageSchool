@@ -179,10 +179,12 @@ AUTH_USER_MODEL = 'users.User'
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'ru-RU'
+LANGUAGE_CODE = 'ru-Ru'
 
 TIME_ZONE = 'Europe/Moscow'
 
+CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_ENABLE_UTC = False
 USE_I18N = True
 
 USE_L10N = True

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import  StaffUser, Student,User,ParentsStudent
+from .models import StaffUser, Student,User,ParentsStudent
 
 class GroupStudent(admin.ModelAdmin):
 	list_filter = ('educational_class',)

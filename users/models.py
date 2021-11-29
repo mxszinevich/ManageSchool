@@ -48,6 +48,7 @@ class User(AbstractBaseUser):
                                     max_length=30, blank=True, unique=True, null=True)
     extra_info = models.JSONField(verbose_name='Дополнительная информация', blank=True, null=True)
     is_account_confirmation = models.BooleanField(verbose_name='Подтверждение аккаунта в системе', default=False)
+    registration_date = models.DateTimeField(verbose_name='Дата регистрации', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
@@ -97,9 +98,14 @@ class StaffUser(models.Model):
         (POSITION_ADMINISTRATOR, 'Администратор'),
         (POSITION_DIRECTOR, 'Директор'),
     )
-
+    POSITION_ADMINISTRATION = (
+        POSITION_ADMINISTRATOR,
+        POSITION_DIRECTOR
+    )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='staff')
     position = models.PositiveSmallIntegerField(verbose_name='Должность', choices=POSITION_STAFF_CHOISES)
+    receiver = models.BooleanField(verbose_name='Получать пьсьмо', default=True)
+    time_recipient_emails = models.TimeField(verbose_name='Время получения письма', default='10:00')
     school = models.ForeignKey(School,
                                verbose_name='Образовательная организация', on_delete=models.CASCADE,
                                blank=True, null=True, related_name='staff')
